@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Impostazioni → Enti di affiliazione</h2>
+
+<!-- =============================== -->
+<!-- NUOVO ENTE -->
+<!-- =============================== -->
+<form method="post" style="margin-bottom:20px;">
+    <input type="hidden" name="azione" value="nuovo">
+
+    <strong>Nuovo ente</strong><br><br>
+
+    Codice:
+    <input type="text" name="codice" required style="width:120px;">
+
+    Nome:
+    <input type="text" name="nome" required style="width:240px;">
+
+    Descrizione:
+    <input type="text" name="descrizione" style="width:300px;">
+
+    <button type="submit">Aggiungi</button>
+</form>
+
+<!-- =============================== -->
+<!-- ELENCO ENTI -->
+<!-- =============================== -->
+<table class="conti-table">
+    <thead>
+        <tr>
+            <th>Codice</th>
+            <th>Nome</th>
+            <th>Descrizione</th>
+            <th>Attivo</th>
+            <th>Azioni</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for e in enti %}
+        <tr>
+            <td>{{ e.codice }}</td>
+            <td>{{ e.nome }}</td>
+            <td>{{ e.descrizione }}</td>
+            <td style="text-align:center;">
+                {% if e.attivo %}
+                    ✅
+                {% else %}
+                    ❌
+                {% endif %}
+            </td>
+            <td style="text-align:center;">
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="azione" value="toggle">
+                    <input type="hidden" name="ente_id" value="{{ e.id }}">
+                    <button type="submit">
+                        {% if e.attivo %}Disattiva{% else %}Attiva{% endif %}
+                    </button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

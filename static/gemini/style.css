@@ -1,0 +1,460 @@
+/* ==============================================
+   1. VARIABILI & CONFIGURAZIONE (Design System)
+   ============================================== */
+:root {
+  /* Brand Colors */
+  --c-primary: #2563eb;
+  --c-primary-dark: #1e40af;
+  --c-primary-soft: #dbeafe;
+  --c-secondary: #64748b;
+  --c-success: #16a34a;
+  --c-danger: #dc2626;
+  --c-warning: #f59e0b;
+
+  /* Backgrounds & Text */
+  --bg-body: #f6f8fb;
+  --bg-surface: #ffffff;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+
+  /* Layout Dimensions */
+  --sidebar-w: 220px;
+  --header-h: 64px;
+  
+  /* UI Metrics */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-card: 0 6px 18px rgba(0,0,0,0.06);
+  --shadow-hover: 0 14px 30px rgba(0,0,0,0.12);
+}
+
+/* ==============================================
+   2. RESET & BASE TYPOGRAPHY
+   ============================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  line-height: 1.6;
+  margin: 0;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: var(--text-main);
+}
+
+h1 { font-size: 1.8rem; }
+h2 { font-size: 1.4rem; }
+h3 { font-size: 1.15rem; }
+
+/* Rimozione freccette input number */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
+/* ==============================================
+   3. LAYOUT STRUTTURALE (Header & Main)
+   ============================================== */
+
+/* Layout Griglia Principale */
+.app-header {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  align-items: center;
+  height: var(--header-h);
+  background: var(--bg-surface); /* Assunto, mancava nel codice orig. */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 100;
+}
+
+.app-header-right {
+  justify-self: start;
+  padding-left: 16px;
+  animation: headerFadeSlideIn 0.35s ease-out both;
+}
+
+/* Navigazione Tasselli (Subdashboard) */
+.subdashboard-nav {
+  display: grid;
+  grid-template-columns: repeat(6, 132px);
+  grid-auto-rows: 34px;
+  gap: 6px;
+  align-content: start;
+}
+
+.subdashboard-group {
+  display: contents; /* Fondamentale per mantenere la griglia */
+}
+
+.subdashboard-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: rgba(0,0,0,0.05); /* Fallback colore */
+  border-radius: 8px;
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  height: 100%;
+  transition: all .15s ease;
+  animation: cardCompressIn 0.25s ease-out both;
+}
+
+.subdashboard-item i { flex-shrink: 0; }
+.subdashboard-item span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subdashboard-item:hover {
+  background-color: rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+.subdashboard-item.active {
+  background-color: var(--c-primary-soft);
+  color: var(--c-primary-dark);
+  font-weight: 600;
+  border: 1px solid var(--c-primary);
+}
+
+/* Responsive Grid Tasselli */
+@media (max-width: 1400px) { .subdashboard-nav { grid-template-columns: repeat(5, 132px); } }
+@media (max-width: 1250px) { .subdashboard-nav { grid-template-columns: repeat(4, 132px); } }
+@media (max-width: 1100px) { .subdashboard-nav { grid-template-columns: repeat(3, 132px); } }
+
+/* Main Content Spacing */
+main {
+  padding: 30px;
+  padding-bottom: 80px;
+  animation: pageFadeIn 0.30s ease-out both;
+}
+
+/* ==============================================
+   4. SIDEBAR MENU
+   ============================================== */
+.sidebar {
+  width: var(--sidebar-w);
+  /* Stili di base per la sidebar se necessari */
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 4px solid transparent;
+  transition: all .2s;
+}
+
+.sidebar a:hover {
+  background-color: #f3f4f6;
+  color: var(--text-main);
+}
+
+.sidebar a.active {
+  background-color: #1f2937;
+  color: #fff;
+  font-weight: 600;
+  border-left-color: var(--c-primary);
+}
+
+.sidebar a.active i {
+  stroke-width: 2.5;
+  color: #fff;
+}
+
+/* ==============================================
+   5. COMPONENTI: CARDS
+   ============================================== */
+
+/* Grid Container */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  margin-top: 30px;
+}
+
+/* Card Style Unificato */
+.dashboard-card {
+  display: flex;
+  align-items: center; /* Layout a riga (icona sx, testo dx) */
+  gap: 18px;
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition: transform .15s ease, box-shadow .15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Variante Verticale (se serve layout a colonna) */
+.dashboard-card.is-vertical {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-icon i {
+  font-size: 24px;
+  color: var(--text-main);
+}
+
+.dashboard-card h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dashboard-card p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ==============================================
+   6. COMPONENTI: TABELLE
+   ============================================== */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-surface);
+  margin-bottom: 32px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: var(--bg-surface);
+}
+
+th, td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+th {
+  background: #f8fafc;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+tr:hover td {
+  background: #f8fafc;
+}
+
+tr:last-child td { border-bottom: none; }
+
+/* Totali (es. Prima Nota) */
+tr.row-totali td {
+  font-weight: 700;
+  background: var(--c-primary-soft);
+  border-top: 2px solid var(--c-primary);
+}
+
+/* ==============================================
+   7. COMPONENTI: BOTTONI
+   ============================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  min-height: 36px;
+  
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  
+  background-color: #f3f4f6;
+  color: var(--text-main);
+  transition: all .15s ease;
+}
+
+/* Nota: Ho rimosso "display: none !important" sulle icone perché distruttivo.
+   Se vuoi nascondere le icone, usa una classe specifica .btn-no-icon */
+
+.btn:hover:not(:disabled) {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+.btn:disabled, .btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Varianti Colore */
+.btn-primary { background: var(--c-primary); color: #fff; }
+.btn-primary:hover { background: var(--c-primary-dark); }
+
+.btn-success { background: var(--c-success); color: #fff; }
+.btn-danger { background: var(--c-danger); color: #fff; }
+.btn-secondary { background: var(--c-secondary); color: #fff; }
+
+.btn-outline-primary {
+  background: transparent;
+  border-color: var(--c-primary);
+  color: var(--c-primary);
+}
+.btn-outline-primary:hover {
+  background: var(--c-primary);
+  color: #fff;
+}
+
+/* Link Icona (Azioni Tabella) */
+.icon-link {
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--c-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: color .2s;
+}
+.icon-link:hover { color: var(--c-primary-dark); }
+.icon-link.danger { color: var(--c-danger); }
+.icon-link.danger:hover { color: #991b1b; }
+
+/* ==============================================
+   8. COMPONENTI: FORM
+   ============================================== */
+.form-card {
+  background: var(--bg-surface);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  max-width: 800px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  width: 100%;
+  transition: all .15s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+}
+
+/* Input Compatti (Giorno/Mese) */
+#giorno, #mese {
+  width: 50px !important;
+  text-align: center;
+  padding: 4px;
+}
+
+/* ==============================================
+   9. BADGES & UTILITIES
+   ============================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-attivo { background: #dcfce7; color: #166534; }
+.badge-uscito { background: #fee2e2; color: #7f1d1d; }
+.badge-da-pagare { background: #dc3545; color: #fff; cursor: pointer; }
+
+/* Spacer */
+.page-spacer { height: 80px; width: 100%; }
+
+/* ==============================================
+   10. ANIMAZIONI
+   ============================================== */
+@keyframes headerFadeSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardCompressIn {
+  from { opacity: 0; transform: translateY(6px) scale(1.05); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { animation: none !important; transition: none !important; }
+}

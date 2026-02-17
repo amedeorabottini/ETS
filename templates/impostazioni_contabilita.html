@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Impostazioni → Contabilità</h2>
+
+<!-- WIZARD EXCEL -->
+<h3>Wizard – Caricamento regole da Excel</h3>
+
+<form method="post"
+      action="{{ url_for('importa_wizard_excel') }}"
+      enctype="multipart/form-data">
+
+    <input type="file"
+           name="file"
+           accept=".xlsx,.xls"
+           required>
+
+    <br><br>
+
+    <button type="submit">
+        📥 Carica mapping wizard
+    </button>
+</form>
+
+<p style="font-size:13px;color:#666; margin-top:10px;">
+Il file Excel deve contenere le colonne:<br>
+<strong>
+parola_chiave, operazione, tipo_movimento, codice_md, priorita, attiva
+</strong><br>
+Il caricamento sostituisce le regole attive esistenti.
+</p>
+
+<hr>
+
+<!-- SEZIONALI -->
+
+
+{% include "partials/sezionali_ricevute.html" %}
+
+
+
+</form>
+
+{% endblock %}

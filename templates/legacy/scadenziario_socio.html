@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>
+  Scadenziario quote – {{ socio.cognome }} {{ socio.nome }}
+</h2>
+
+<p>
+  <a href="{{ url_for('libro_soci') }}">⬅ Torna al libro soci</a>
+</p>
+
+{% for anno in anni %}
+
+<h3>Anno {{ anno }}</h3>
+
+<table border="1"
+       cellpadding="6"
+       width="100%"
+       style="border-collapse:collapse; text-align:center; margin-bottom:30px;">
+
+  <!-- HEADER MESI -->
+  <tr style="background:#f0f0f0; font-weight:bold;">
+    <th style="text-align:left;">Quota</th>
+    {% for m in mesi if m.startswith(anno|string) %}
+      <th>{{ m[5:7] }}</th>
+    {% endfor %}
+  </tr>
+
+  <!-- RIGHE QUOTE -->
+  {% for q in quote %}
+  <tr>
+    <td style="text-align:left;">
+      <b>{{ q.nome }}</b><br>
+      <small>{{ q.periodicita }}</small>
+    </td>
+
+    {% for m in mesi if m.startswith(anno|string) %}
+      {% set stato = q.mesi.get(m) %}
+
+      <td
+        style="
+          {% if stato == 'PAGATA' %}
+            background:#d4edda; color:#155724;
+          {% elif stato == 'DOVUTA' %}
+            background:#f8d7da; color:#721c24;
+          {% else %}
+            background:#eeeeee; color:#666;
+          {% endif %}
+        "
+      >
+        {% if stato == 'PAGATA' %}
+          ✔
+        {% elif stato == 'DOVUTA' %}
+          <a href="{{ url_for(
+              'nuova_ricevuta',
+              socio_id=socio.id,
+              quota_id=q.quota_id,
+              mese=m
+          ) }}"
+             style="color:inherit; text-decoration:none;"
+             title="Emetti ricevuta">
+            ✖
+          </a>
+        {% else %}
+          —
+        {% endif %}
+      </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+
+</table>
+
+{% endfor %}
+
+{% endblock %}

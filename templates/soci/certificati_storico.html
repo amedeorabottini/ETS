@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% from "_documenti_actions.html" import documenti_actions %}
+{% block content %}
+
+{% from "_socio_header.html" import socio_header %}
+
+{{ socio_header("Certificati medici", soci, socio) }}
+
+{% if not socio %}
+<div class="alert alert-info">
+  Seleziona un socio per visualizzare o caricare certificati medici.
+</div>
+{% endif %}
+
+{% if socio %}
+
+<!-- ========================= -->
+<!-- NUOVO CERTIFICATO -->
+<!-- ========================= -->
+<div class="card mb-3">
+  <div class="card-header">Nuovo certificato</div>
+  <div class="card-body">
+
+    <form method="post" enctype="multipart/form-data">
+      <input type="hidden" name="socio_id" value="{{ socio.id }}">
+
+        {% if edit_certificato %}
+          <input type="hidden" name="edit_id" value="{{ edit_certificato.id }}">
+        {% endif %}
+
+        <div class="row g-2">
+
+        <!-- TIPO CERTIFICATO -->
+        <div class="col-md-3">
+          <label class="form-label">Tipo</label>
+         <select name="tipo" class="form-select" required>
+          <option value="">— Seleziona tipo —</option>
+
+          <option value="AGONISTICO"
+            {% if edit_certificato and edit_certificato.tipo == 'AGONISTICO' %}
+              selected
+            {% endif %}>
+            Agonistico
+          </option>
+
+          <option value="NON_AGONISTICO"
+            {% if edit_certificato and edit_certificato.tipo == 'NON_AGONISTICO' %}
+              selected
+            {% endif %}>
+            Non agonistico
+          </option>
+        </select>
+        </div>
+
+        <!-- DATE -->
+        <div class="col-md-3">
+          <label class="form-label">Rilascio</label>
+          <input type="date" name="data_rilascio"
+                  class="form-control"
+                  value="{{ edit_certificato.data_rilascio if edit_certificato else '' }}"
+                  required>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Scadenza</label>
+          <input type="date" name="data_scadenza"
+                  class="form-control"
+                  value="{{ edit_certificato.data_scadenza if edit_certificato else '' }}"
+                  required>
+        </div>
+
+        <!-- MEDICO -->
+        <div class="col-md-3">
+          <label class="form-label">Medico</label>
+          <input type="text" name="medico"
+                class="form-control"
+                value="{{ edit_certificato.medico if edit_certificato else '' }}">
+        </div>
+
+        <!-- STRUTTURA -->
+        <div class="col-md-6 mt-2">
+         <input type="text" name="struttura"
+                class="form-control"
+                value="{{ edit_certificato.struttura if edit_certificato else '' }}">
+        </div>
+
+        <!-- FILE -->
+        <div class="col-md-6 mt-2">
+          <input type="file"
+                 name="file_certificato"
+                 class="form-control"
+                 accept=".pdf,.jpg,.jpeg,.png">   
+        </div>
+
+        <!-- NOTE -->
+        <div class="col-12 mt-2">
+         <textarea name="note"
+                  class="form-control"
+                  rows="2">{{ edit_certificato.note if edit_certificato else '' }}</textarea>
+        </div>
+
+        <!-- SUBMIT -->
+        <div class="col-12 mt-2">
+          <button class="btn {% if edit_certificato %}btn-primary{% else %}btn-success{% endif %}">
+            {% if edit_certificato %}
+              💾 Salva modifiche
+            {% else %}
+              ➕ Carica certificato
+            {% endif %}
+          </button>
+        </div>
+
+      </div>
+        </form>
+
+  </div>
+</div>
+
+<!-- ========================= -->
+<!-- STORICO CERTIFICATI -->
+<!-- ========================= -->
+<div class="card">
+  <div class="card-header">Storico</div>
+
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0 align-middle">
+      <thead>
+      <tr>
+        <th>Tipo</th>
+        <th>Rilascio</th>
+        <th>Scadenza</th>
+        <th>Allegati</th>
+        <th>Stato</th>
+        <th class="text-center">Azioni</th>
+      </tr>
+    </thead>
+
+      <tbody>
+        {% for c in certificati %}
+        <tr>
+
+          <td>{{ c.tipo }}</td>
+          <td>{{ c.data_rilascio }}</td>
+          <td>{{ c.data_scadenza }}</td>
+
+          <!-- DOCUMENTI -->
+          <td>
+            {{ documenti_actions(c.files) }}
+          </td>
+
+          <!-- STATO -->
+          <td>
+            {% if c.stato == 'VALIDO' %}
+              <span class="badge bg-success">Valido</span>
+            {% else %}
+              <span class="badge bg-danger">Scaduto</span>
+            {% endif %}
+          </td>
+
+          <!-- AZIONI -->
+          <td class="text-center">
+
+            <!-- MODIFICA -->
+            <a href="{{ url_for(
+              'certificati_bp.storico_certificati_medici_socio',
+              socio_id=socio.id,
+              edit_id=c.id
+                ) }}"
+              class="btn btn-outline-primary btn-sm"
+              title="Modifica certificato">
+              <i data-lucide="edit"></i>
+            </a>
+
+            <!-- ELIMINA -->
+            <form method="post"
+                  action="{{ url_for('certificati_bp.elimina_certificato_medico', certificato_id=c.id) }}"
+                  onsubmit="return confirm('Confermi eliminazione del certificato?');"
+                  style="display:inline;">
+              <button class="btn btn-outline-danger btn-sm" title="Elimina">
+                <i data-lucide="trash"></i>
+              </button>
+            </form>
+
+          </td>
+
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">
+            Nessun certificato presente
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

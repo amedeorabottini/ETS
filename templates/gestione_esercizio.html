@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Cambio esercizio</h2>
+
+<h4>Esercizi esistenti</h4>
+
+<form method="post">
+<select name="esercizio_id">
+    {% for e in esercizi %}
+        <option value="{{ e.id }}"
+            {% if e.anno == anno_corrente %}selected{% endif %}>
+            {{ e.anno }}
+        </option>
+    {% endfor %}
+</select>
+
+<button>Entra</button>
+</form>
+
+<hr>
+
+<h4>Nuovo esercizio</h4>
+
+<form method="post">
+Anno:
+<input type="number" name="nuovo_anno" required>
+<button>Crea e entra</button>
+</form>
+
+{% endblock %}

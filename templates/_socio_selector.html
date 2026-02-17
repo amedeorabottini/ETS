@@ -1,0 +1,31 @@
+{% macro socio_selector(soci, socio) %}
+
+<div class="d-flex align-items-end gap-2 mb-3">
+
+  <!-- SELECT SOCIO -->
+  <form method="get" class="flex-grow-1">
+    <select name="socio_id"
+            class="form-select"
+            onchange="this.form.submit()"
+            style="max-width: 360px;">
+      <option value="">— Seleziona socio —</option>
+      {% for s in soci %}
+        <option value="{{ s.id }}"
+          {% if socio and s.id == socio.id %}selected{% endif %}>
+          {{ s.cognome }} {{ s.nome }}
+        </option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <!-- TORNA AL SOCIO -->
+  {% if socio %}
+    <a href="{{ url_for('dettaglio_socio', socio_id=socio.id) }}"
+       class="btn btn-outline-secondary">
+      ← Torna al socio
+    </a>
+  {% endif %}
+
+</div>
+
+{% endmacro %}

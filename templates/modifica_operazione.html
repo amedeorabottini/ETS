@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Modifica operazione</h2>
+
+<form method="post">
+
+Data<br>
+<input type="date" name="data" value="{{ operazione.data }}" required>
+<br><br>
+
+Descrizione<br>
+<input type="text"
+       name="descrizione"
+       value="{{ operazione.descrizione }}"
+       required
+       style="width:300px;">
+<br><br>
+
+Importo<br>
+<input type="number"
+       step="0.01"
+       name="importo"
+       value="{{ operazione.importo }}"
+       required>
+<br><br>
+
+Tipo<br>
+<select name="tipo_movimento" required>
+    <option value="E" {% if operazione.tipo == 'E' %}selected{% endif %}>Entrata</option>
+    <option value="U" {% if operazione.tipo == 'U' %}selected{% endif %}>Uscita</option>
+</select>
+<br><br>
+
+Classificazione<br>
+<select name="classificazione">
+    <option value="">— movimento finanziario —</option>
+    {% for c in conti %}
+        <option value="{{ c.id }}"
+            {% if c.id == operazione.piano_conti_id %}selected{% endif %}>
+            {{ c.codice }} - {{ c.descrizione }}
+        </option>
+    {% endfor %}
+</select>
+<br><br>
+
+Conto finanziario<br>
+<select name="conto_id">
+    <option value="">CASSA</option>
+    {% for c in conti_correnti %}
+        <option value="{{ c.id }}"
+            {% if c.id == operazione.conto_id %}selected{% endif %}>
+            {{ c.codice }} – {{ c.nome }}
+        </option>
+    {% endfor %}
+</select>
+
+<br><br>
+
+<button type="submit">💾 Salva modifiche</button>
+&nbsp;
+<a href="{{ url_for('prima_nota') }}">❌ Annulla</a>
+
+</form>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="max-width:800px; margin:auto;">
+
+<h2>Ricevuta n. {{ ricevuta.numero }}</h2>
+
+<p>
+<b>Data:</b>
+{{ ricevuta.data_emissione[8:10] }}/{{ ricevuta.data_emissione[5:7] }}/{{ ricevuta.data_emissione[0:4] }}
+</p>
+
+{% if ricevuta.cognome %}
+<p>
+<b>Socio:</b> {{ ricevuta.cognome }} {{ ricevuta.nome }}
+</p>
+{% else %}
+<p><i>Ricevuta manuale</i></p>
+{% endif %}
+
+<hr>
+
+<table width="100%" border="1" cellpadding="6" style="border-collapse:collapse;">
+<tr style="background:#f0f0f0;">
+  <th>Descrizione</th>
+  <th>Mese</th>
+  <th style="text-align:right;">Importo (€)</th>
+</tr>
+
+{% set totale = 0 %}
+{% for r in righe %}
+<tr>
+  <td>
+    {{ r.quota_nome or r.descrizione }}
+  </td>
+  <td>{{ r.mese }}</td>
+  <td style="text-align:right;">
+    {{ "%.2f"|format(r.importo) }}
+    {% set totale = totale + r.importo %}
+  </td>
+</tr>
+{% endfor %}
+
+<tr style="font-weight:bold;">
+  <td colspan="2" style="text-align:right;">Totale</td>
+  <td style="text-align:right;">{{ "%.2f"|format(totale) }}</td>
+</tr>
+</table>
+
+<br>
+
+<button onclick="window.print()">🖨 Stampa</button>
+&nbsp;
+<a href="{{ url_for('libro_soci') }}">⬅ Torna ai soci</a>
+
+</div>
+
+{% endblock %}

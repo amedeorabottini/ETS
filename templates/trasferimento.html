@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Trasferimento banca ↔ cassa</h2>
+
+<form method="post">
+  Data:
+  <input type="date" name="data" required><br><br>
+
+  Descrizione:
+  <input type="text" name="descrizione" required style="width:300px;"><br><br>
+
+  Importo:
+  <input type="number" step="0.01" name="importo" required><br><br>
+
+  Conto origine:
+  <select name="conto_origine" required>
+    <option value="CASSA">CASSA</option>
+    {% for c in conti_correnti %}
+      <option value="{{ c.id }}">{{ c.codice }} - {{ c.nome }}</option>
+    {% endfor %}
+  </select>
+  <br><br>
+
+  Conto destinazione:
+  <select name="conto_destinazione" required>
+    <option value="CASSA">CASSA</option>
+    {% for c in conti_correnti %}
+      <option value="{{ c.id }}">{{ c.codice }} - {{ c.nome }}</option>
+    {% endfor %}
+  </select>
+  <br><br>
+
+  <button type="submit">Registra trasferimento</button>
+</form>
+
+{% endblock %}

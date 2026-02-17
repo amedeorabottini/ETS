@@ -1,0 +1,68 @@
+<h3>Conti correnti</h3>
+
+<!-- NUOVO CONTO -->
+<form method="post" action="{{ url_for('impostazioni_conti_correnti') }}" style="margin-bottom:15px;">
+  <input type="hidden" name="azione" value="nuovo_conto">
+
+  <strong>Nuovo conto</strong><br><br>
+
+  Codice:
+  <input type="number" name="codice" min="1" max="9" required style="width:60px;">
+
+  Nome:
+  <input type="text" name="nome" required style="width:200px;">
+
+  IBAN:
+  <input type="text" name="iban" required style="width:260px;">
+
+  Colore:
+  <input type="color" name="colore" value="#d4edda">
+
+  <button type="submit">Aggiungi</button>
+</form>
+
+<table class="conti-table">
+  <thead>
+    <tr>
+      <th>Codice</th>
+      <th>Nome</th>
+      <th>IBAN</th>
+      <th>Colore</th>
+      <th>Azioni</th>
+    </tr>
+  </thead>
+
+  <tbody>
+  {% for c in conti_correnti %}
+    <tr>
+      <td>{{ c.codice }}</td>
+      <td>{{ c.nome }}</td>
+      <td>{{ c.iban }}</td>
+      <td>
+        <div style="
+          width:20px;
+          height:20px;
+          margin:auto;
+          background: {{ c.colore or '#eee' }};
+          border:1px solid #999;
+        "></div>
+      </td>
+      <td>
+        <div style="display:flex; gap:8px; justify-content:center; align-items:center;">
+          <a href="{{ url_for('modifica_conto_corrente', conto_id=c.id) }}">
+            Modifica
+          </a>
+
+          <form method="post"
+                action="{{ url_for('impostazioni_conti_correnti') }}"
+                onsubmit="return confirm('Eliminare questo conto?');">
+            <input type="hidden" name="azione" value="elimina_conto">
+            <input type="hidden" name="conto_id" value="{{ c.id }}">
+            <button type="submit">Elimina</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Prima Nota</title>
+</head>
+<body>
+
+<h2>Inserimento operazione</h2>
+
+<form method="post">
+    Data:
+    <input type="date" name="data" required><br><br>
+
+    Descrizione:
+    <input type="text" name="descrizione" required><br><br>
+
+    Importo:
+    <input type="number" step="0.01" name="importo" required><br><br>
+
+    Tipo:
+    <select name="tipo_movimento">
+        <option value="ENTRATA">Entrata</option>
+        <option value="USCITA">Uscita</option>
+    </select><br><br>
+
+    Classificazione:
+    <select name="classificazione_id">
+        {% for c in piano_conti %}
+            <option value="{{ c.id }}">{{ c.codice }} - {{ c.voce }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <button type="submit">Salva</button>
+</form>
+
+<hr>
+
+<h2>Operazioni inserite</h2>
+
+<table border="1" cellpadding="5">
+<tr>
+    <th>Data</th>
+    <th>Descrizione</th>
+    <th>Importo</th>
+    <th>Tipo</th>
+    <th>Classificazione</th>
+</tr>
+{% for o in operazioni %}
+<tr>
+    <td>{{ o.data }}</td>
+    <td>{{ o.descrizione }}</td>
+    <td>{{ o.importo }}</td>
+    <td>{{ o.tipo_movimento }}</td>
+    <td>{{ o.classificazione }}</td>
+</tr>
+{% endfor %}
+</table>
+
+</body>
+</html>

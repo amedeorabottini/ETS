@@ -1,0 +1,101 @@
+<!-- ===========================
+     SOTTO-DASHBOARD SOCI
+     =========================== -->
+<div class="subdashboard-header">
+
+  <div class="subdashboard-nav">
+
+    <!-- CORE -->
+    <div class="subdashboard-group primary">
+
+      <a href="{{ url_for('gestione_soci.gestione_soci') }}"
+        class="subdashboard-item
+        {% if request.endpoint.startswith('gestione_soci.')
+              or request.endpoint.startswith('dettaglio_socio') %}
+          active
+        {% endif %}">
+        <i data-lucide="users"></i>
+        <span>Gestione</span>
+      </a>
+
+      <a href="{{ url_for('libro_soci') }}"
+         class="subdashboard-item
+         {% if request.endpoint.startswith('libro_soci') %}
+           active
+         {% endif %}">
+        <i data-lucide="book-user"></i>
+        <span>Libro Soci</span>
+      </a>
+
+      <a href="{{ url_for('soci_quote') }}"
+         class="subdashboard-item
+         {% if request.endpoint.startswith('soci_quote') %}
+           active
+         {% endif %}">
+        <i data-lucide="calendar"></i>
+        <span>Quote</span>
+      </a>
+
+      <a href="{{ url_for('scadenziario_matrice') }}"
+         class="subdashboard-item
+         {% if request.endpoint.startswith('scadenziario') %}
+           active
+         {% endif %}">
+        <i data-lucide="alarm-clock"></i>
+        <span>Scadenze</span>
+      </a>
+
+    </div>
+
+    <!-- SERVIZI -->
+    <div class="subdashboard-group secondary">
+
+      <a href="{{ url_for('tesseramenti_bp.storico_tesseramenti_socio') }}"
+         class="subdashboard-item
+         {% if request.endpoint.startswith('storico_tesseramenti') %}
+           active
+         {% endif %}">
+        <i data-lucide="badge-check"></i>
+        <span>Tesseramenti</span>
+      </a>
+
+      <a href="{{ url_for('certificati_bp.storico_certificati_medici_socio') }}"
+         class="subdashboard-item
+         {% if request.endpoint.startswith('storico_certificati') %}
+           active
+         {% endif %}">
+        <i data-lucide="heart-pulse"></i>
+        <span>Certificati</span>
+      </a>
+
+      <a href="{{ url_for('soci_documenti') }}"
+         class="subdashboard-item
+         {% if request.endpoint.startswith('soci_documenti') %}
+           active
+         {% endif %}">
+        <i data-lucide="folder"></i>
+        <span>Documenti</span>
+      </a>
+
+      <a href="{{ url_for('rimborsi_soci') }}"
+         class="subdashboard-item
+         {% if request.endpoint.startswith('rimborsi_soci') %}
+           active
+         {% endif %}">
+        <i data-lucide="receipt"></i>
+        <span>Rimborsi</span>
+      </a>
+
+      <a href="{{ url_for('richieste_adesione') }}"
+         class="subdashboard-item
+         {% if request.endpoint.startswith('richieste_adesione') %}
+           active
+         {% endif %}">
+        <i data-lucide="user-plus"></i>
+        <span>Adesioni</span>
+      </a>
+
+    </div>
+
+  </div>
+</div>

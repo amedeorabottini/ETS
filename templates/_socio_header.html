@@ -1,0 +1,17 @@
+{% from "_socio_selector.html" import socio_selector %}
+
+{% macro socio_header(titolo, soci, socio) %}
+
+<div class="mb-3">
+
+  <!-- TITOLO -->
+  <h2 class="mb-2">
+  {{ titolo }}
+</h2>   
+
+  <!-- SELETTORE SOCIO + TORNA -->
+  {{ socio_selector(soci, socio) }}
+
+</div>
+
+{% endmacro %}

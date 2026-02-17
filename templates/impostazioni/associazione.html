@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Anagrafica associazione</h2>
+
+<div class="card form-card">
+
+  <form method="post">
+
+    <div class="form-group">
+      <label>Denominazione *</label>
+      <input type="text" name="denominazione" value="{{ associazione.denominazione }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Codice fiscale *</label>
+      <input type="text" name="codice_fiscale" value="{{ associazione.codice_fiscale }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Indirizzo *</label>
+      <input type="text" name="indirizzo" value="{{ associazione.indirizzo }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Civico *</label>
+      <input type="text" name="civico" value="{{ associazione.civico }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>CAP *</label>
+      <input type="text" name="cap" value="{{ associazione.cap }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Città *</label>
+      <input type="text" name="citta" value="{{ associazione.citta }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Provincia *</label>
+      <input type="text" name="provincia" value="{{ associazione.provincia }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>PEC</label>
+      <input type="email" name="pec" value="{{ associazione.pec or '' }}">
+    </div>
+
+    <div class="form-group">
+      <label>Partita IVA</label>
+      <input type="text" name="partita_iva" value="{{ associazione.partita_iva or '' }}">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        Salva modifiche
+      </button>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}

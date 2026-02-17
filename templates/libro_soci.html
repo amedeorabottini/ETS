@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Libro soci</h2>
+
+<div style="margin-bottom:20px;">
+  <a href="{{ url_for('nuovo_socio') }}" class="btn-primary">
+    + Nuovo socio
+  </a>
+</div>
+
+<table class="table-gestionale">
+  <thead>
+    <tr>
+      <th style="width:80px;">#</th>
+      <th>Cognome</th>
+      <th>Nome</th>
+      <th>Codice fiscale</th>
+      <th>Data ingresso</th>
+      <th>Stato</th>
+      <th style="width:180px;">Azioni</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for s in soci %}
+    <tr class="{% if s.stato == 'USCITO' %}riga-disattiva{% endif %}">
+
+      <!-- ✅ MATRICOLA PERSISTENTE -->
+      <td>
+        <span class="badge badge-matricola">
+          {{ s.matricola }}
+        </span>
+      </td>
+
+      <td>{{ s.cognome }}</td>
+      <td>{{ s.nome }}</td>
+      <td>{{ s.codice_fiscale or '—' }}</td>
+      <td>
+        {% if s.data_ingresso %}
+          {{ s.data_ingresso[8:10] }}/{{ s.data_ingresso[5:7] }}/{{ s.data_ingresso[0:4] }}
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td>
+        {% if s.stato == 'ATTIVO' %}
+          <span class="badge badge-attivo">ATTIVO</span>
+        {% else %}
+          <span class="badge badge-uscito">USCITO</span>
+        {% endif %}
+      </td>
+
+      <td>
+        <!-- 👁 Dettaglio -->
+        <a href="{{ url_for('dettaglio_socio', socio_id=s.id) }}"
+           class="icon-link"
+           title="Dettaglio socio">
+          <i data-lucide="eye"></i>
+        </a>
+
+        <!-- ⎋ Uscita -->
+        {% if s.stato == 'ATTIVO' %}
+        <form method="post"
+              action="{{ url_for('uscita_socio', socio_id=s.id) }}"
+              style="display:inline;">
+          <button type="submit"
+                  class="icon-link danger"
+                  title="Segna come uscito"
+                  onclick="return confirm('Segnare il socio come USCITO?')">
+            <i data-lucide="log-out"></i>
+          </button>
+        </form>
+        {% endif %}
+      </td>
+
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

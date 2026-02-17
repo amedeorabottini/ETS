@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ricevuta emessa</title>
+</head>
+<body>
+
+<script>
+  // apre il PDF
+  window.open(
+    "{{ url_for('ricevute_bp.stampa_ricevuta_pdf', ricevuta_id=ricevuta_id) }}",
+    "_blank"
+  );
+
+  // resetta la UI
+  window.location.href = "{{ url_for('ricevute_bp.nuova_ricevuta') }}";
+</script>
+
+<p>Ricevuta emessa correttamente.</p>
+
+</body>
+</html>

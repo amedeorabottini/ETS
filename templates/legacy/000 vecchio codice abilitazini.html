@@ -1,0 +1,159 @@
+<!-- ========================= -->
+  <!-- TESSERAMENTO -->
+  <!-- ========================= -->
+  <div class="col-md-6">
+  <div class="border rounded p-3">
+    <strong>Tesseramento</strong>
+
+    <div class="form-check mt-2">
+      <input class="form-check-input"
+             type="checkbox"
+             id="gestione_tesseramento"
+             name="gestione_tesseramento"
+             {% if socio.gestione_tesseramento %}checked{% endif %}>
+      <label class="form-check-label" for="gestione_tesseramento">
+        Gestione tesseramento
+      </label>
+    </div>
+
+        <!-- SOTTOMENU ENTI -->
+        <div id="enti-affiliazione-box" class="mt-3 ps-3"
+            style="display:none;">
+          <small class="text-muted d-block mb-2">
+            Enti affiliativi abilitati
+          </small>
+
+          {% for e in enti_affiliazione %}
+            <div class="form-check">
+              <input class="form-check-input"
+                    type="checkbox"
+                    name="enti_abilitati"
+                    value="{{ e.id }}">
+              <label class="form-check-label">
+                {{ e.nome }} {% if e.codice %}({{ e.codice }}){% endif %}
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+
+  <!-- ========================= -->
+  <!-- CERTIFICATI MEDICI -->
+  <!-- ========================= -->
+  <div class="col-md-6">
+  <div class="border rounded p-3">
+    <strong>Certificati medici</strong>
+
+    <div class="form-check mt-2">
+      <input class="form-check-input"
+             type="checkbox"
+             id="gestione_certificati_medici"
+             name="gestione_certificati_medici"
+             {% if socio.gestione_certificati_medici %}checked{% endif %}>
+      <label class="form-check-label">
+        Gestione certificati medici
+      </label>
+    </div>
+
+        <!-- SOTTOMENU CERTIFICATI -->
+        <div id="certificati-box" class="mt-3 ps-3" style="display:none;">
+          <div class="form-check">
+            <input class="form-check-input"
+                  type="checkbox"
+                  name="certificato_agonistico"
+                  {% if socio.certificato_agonistico %}checked{% endif %}>
+            <label class="form-check-label">Agonistico</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input"
+                  type="checkbox"
+                  name="certificato_non_agonistico"
+                  {% if socio.certificato_non_agonistico %}checked{% endif %}>
+            <label class="form-check-label">Non agonistico</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- ========================= -->
+  <!-- RUOLO -->
+  <!-- ========================= -->
+  <div class="col-md-6">
+    <div class="border rounded p-3">
+      <strong>Ruolo</strong>
+
+      <div class="form-check mt-2">
+        <input class="form-check-input"
+               type="checkbox"
+               id="is_volontario"
+               name="is_volontario"
+               {% if socio.is_volontario %}checked{% endif %}>
+        <label class="form-check-label" for="is_volontario">
+          Socio volontario
+        </label>
+      </div>
+
+      <div class="form-text">
+        Il socio opera come volontario dell’associazione.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- RIMBORSI SPESE -->
+  <!-- ========================= -->
+  <div class="col-md-6">
+    <div class="border rounded p-3">
+      <strong>Rimborsi spese</strong>
+
+      <div class="form-check mt-2">
+        <input class="form-check-input"
+               type="checkbox"
+               id="abilita_rimborso_spese"
+               name="abilita_rimborso_spese"
+               {% if socio.abilita_rimborso_spese %}checked{% endif %}>
+        <label class="form-check-label" for="abilita_rimborso_spese">
+          Abilita rimborsi spese
+        </label>
+      </div>
+
+      <div class="form-text">
+        Consente la gestione dei rimborsi spese del socio.
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- ========================= -->
+<!-- PULSANTE SALVATAGGIO -->
+<!-- ========================= -->
+
+<hr class="my-3">
+
+<div class="d-flex align-items-center gap-3">
+  <label class="form-label mb-0">
+    Anno di validità
+  </label>
+
+  <select name="anno_validita" class="form-select" style="width:120px;" required>
+    {% for a in anni %}
+      <option value="{{ a }}">{{ a }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit"
+          name="salva_abilitazioni"
+          value="1"
+          class="btn btn-primary">
+    💾 Salva abilitazioni
+  </button>
+</div>
+
+<div class="form-text mt-2">
+  Le modifiche saranno valide a partire dall’anno selezionato.
+</div>

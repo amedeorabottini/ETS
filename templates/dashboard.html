@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="dashboard-header">
+  <h1>Panoramica</h1>
+  <p class="dashboard-subtitle">
+    Accesso rapido alle principali funzioni
+  </p>
+</div>
+
+<div class="dashboard-grid">
+
+  <!-- PRIMA NOTA -->
+  <a href="{{ url_for('prima_nota') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="book-open"></i>
+    </div>
+    <div class="card-text">
+      <h3>Prima Nota</h3>
+      <p>Gestione contabile e movimenti</p>
+    </div>
+  </a>
+
+  <!-- SOCI -->
+  <a href="{{ url_for('dashboard_soci') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="users"></i>
+    </div>
+    <div class="card-text">
+      <h3>Soci</h3>
+      <p>Gestione soci, quote e documenti</p>
+    </div>
+  </a>
+
+  <!-- AMMINISTRAZIONE -->
+  <a href="{{ url_for('dashboard_amministrazione') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="folder"></i>
+    </div>
+    <div class="card-text">
+      <h3>Amministrazione</h3>
+      <p>Verbali e archivio documenti</p>
+    </div>
+  </a>
+
+  <!-- IMPOSTAZIONI -->
+  <a href="{{ url_for('impostazioni') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="settings"></i>
+    </div>
+    <div class="card-text">
+      <h3>Impostazioni</h3>
+      <p>Configurazione generale</p>
+    </div>
+  </a>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Modifica quota</h2>
+
+<form method="post" style="max-width:500px;">
+
+Nome<br>
+<input type="text" name="nome" value="{{ quota.nome }}" required style="width:100%;"><br><br>
+
+Descrizione<br>
+<textarea name="descrizione" style="width:100%;">{{ quota.descrizione or "" }}</textarea><br><br>
+
+Importo (€)<br>
+<input type="number" step="0.01" name="importo" value="{{ quota.importo }}" required><br><br>
+
+Periodicità<br>
+<select name="periodicita" required>
+  <option value="ANNUALE" {% if quota.periodicita == 'ANNUALE' %}selected{% endif %}>Annuale</option>
+  <option value="MENSILE" {% if quota.periodicita == 'MENSILE' %}selected{% endif %}>Mensile</option>
+</select><br><br>
+
+<button type="submit">💾 Salva</button>
+&nbsp;
+<a href="{{ url_for('gestione_quote') }}">Annulla</a>
+
+</form>
+
+{% endblock %}

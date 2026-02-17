@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Nuovo socio</h2>
+
+<form method="post" style="max-width:700px;">
+
+<h4>Dati anagrafici</h4>
+
+Nome<br>
+<input type="text" name="nome" required style="width:100%;"><br><br>
+
+Cognome<br>
+<input type="text" name="cognome" required style="width:100%;"><br><br>
+
+Codice fiscale<br>
+<input type="text" name="codice_fiscale" style="width:300px;"><br><br>
+
+Data di nascita<br>
+<input type="date" name="data_nascita"><br><br>
+
+Luogo di nascita<br>
+<input type="text" name="luogo_nascita" style="width:300px;"><br><br>
+
+<h4>Residenza</h4>
+
+Indirizzo<br>
+<input type="text" name="indirizzo" style="width:100%;"><br><br>
+
+CAP
+<input type="text" name="cap" style="width:80px;">
+Comune
+<input type="text" name="comune" style="width:200px;">
+Provincia
+<input type="text" name="provincia" style="width:60px;"><br><br>
+
+<h4>Contatti</h4>
+
+Email<br>
+<input type="email" name="email" style="width:300px;"><br><br>
+
+Telefono<br>
+<input type="text" name="telefono" style="width:200px;"><br><br>
+
+<h4>Vita associativa</h4>
+
+Data ingresso socio<br>
+<input type="date" name="data_ingresso" required><br><br>
+
+Note<br>
+<textarea name="note" style="width:100%; height:80px;"></textarea><br><br>
+
+<button type="submit">Salva socio</button>
+&nbsp;
+<a href="{{ url_for('libro_soci') }}">Annulla</a>
+
+</form>
+
+{% endblock %}

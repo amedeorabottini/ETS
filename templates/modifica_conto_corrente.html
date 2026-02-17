@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Modifica conto corrente</h2>
+
+<form method="post">
+
+<p>
+<b>Codice (1–9)</b><br>
+<input type="number"
+       name="codice"
+       min="1"
+       max="9"
+       value="{{ conto.codice }}"
+       required>
+</p>
+
+<p>
+<b>Nome</b><br>
+<input type="text"
+       name="nome"
+       value="{{ conto.nome }}"
+       required
+       style="width:300px;">
+</p>
+
+<p>
+<b>IBAN</b><br>
+<input type="text"
+       name="iban"
+       value="{{ conto.iban }}"
+       required
+       style="width:400px;">
+</p>
+
+<p>
+<b>Colore conto</b><br>
+<input type="color"
+       name="colore"
+       value="{{ conto.colore or '#cccccc' }}">
+</p>
+
+<br>
+
+<button type="submit">Salva modifiche</button>
+&nbsp;
+<a href="{{ url_for('conti_correnti') }}">Annulla</a>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,157 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+{% from "_socio_header.html" import socio_header %}
+
+{{ socio_header("Tesseramenti", soci, socio) }}
+
+<div class="card mb-3">
+  <div class="card-header">
+    {% if edit_tesseramento %}
+      Modifica tesseramento
+    {% else %}
+      Nuovo tesseramento
+    {% endif %}
+</div>
+  <div class="card-body">
+
+    {% if socio %}
+   <form method="post"
+        action="{{ url_for('tesseramenti_bp.storico_tesseramenti_socio', socio_id=socio.id) }}">
+
+    {% if edit_tesseramento %}
+      <input type="hidden" name="edit_id" value="{{ edit_tesseramento.id }}">
+    {% endif %}
+
+    {% else %}
+    <form method="post" class="opacity-50" onsubmit="return false;">
+    {% endif %}
+      <div class="row g-2">
+
+        <div class="col-md-4">
+            <label class="form-label">Ente</label>
+            <select name="ente_affiliazione_id" class="form-select" required>
+            {% for e in enti %}
+              <option value="{{ e.id }}"
+                {% if edit_tesseramento and e.id == edit_tesseramento.ente_id %}selected{% endif %}>
+                {{ e.nome }}
+              </option>
+            {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Emissione</label>
+            <input type="date" name="data_emissione"
+            class="form-control"
+            value="{{ edit_tesseramento.data_inizio if edit_tesseramento else '' }}"
+            required>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Scadenza</label>
+            <input type="date" name="data_scadenza"
+              class="form-control"
+              value="{{ edit_tesseramento.data_scadenza if edit_tesseramento else '' }}"
+              required>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Numero tessera</label>
+            <input type="text"
+            name="numero_tessera"
+            class="form-control"
+            value="{{ edit_tesseramento.numero_tessera if edit_tesseramento else '' }}"
+            placeholder="Facoltativo">
+            
+        </div>
+
+        <div class="col-md-1 d-flex align-items-end">
+            <button class="btn {% if edit_tesseramento %}btn-primary{% else %}btn-success{% endif %} w-100">
+            {% if edit_tesseramento %}
+              💾 Salva modifiche
+            {% else %}
+              ➕ Aggiungi
+            {% endif %}
+          </button>
+        </div>
+
+        </div>
+    </form>
+
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Storico</div>
+  <div class="card-body p-0">
+
+    <table class="table table-sm mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Ente</th>
+          <th>Numero</th>
+          <th>Emissione</th>
+          <th>Scadenza</th>
+          <th>Stato</th>
+          <th class="text-center">Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for t in tesseramenti %}
+        <tr>
+          <td>{{ t.ente_nome }}</td>
+          <td>{{ t.numero_tessera or "—" }}</td>
+          <td>{{ t.data_inizio }}</td>
+          <td>{{ t.data_scadenza }}</td>
+          <td>
+            {% if t.stato == 'VALIDO' %}
+              <span class="badge bg-success">Valido</span>
+            {% elif t.stato == 'SCADUTO' %}
+              <span class="badge bg-danger">Scaduto</span>
+            {% else %}
+              <span class="badge bg-secondary">Annullato</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+
+            <!-- MODIFICA -->
+            <a href="{{ url_for('tesseramenti_bp.storico_tesseramenti_socio',
+                                socio_id=socio.id,
+                                edit_id=t.id) }}"
+              class="btn btn-outline-primary btn-sm"
+              title="Modifica">
+              <i data-lucide="edit"></i>
+            </a>
+
+            {% if t.stato != 'ANNULLATO' %}
+              <!-- ELIMINA -->
+              <form method="post"
+                    action="{{ url_for('tesseramenti_bp.elimina_tesseramento', tesseramento_id=t.id) }}"
+                    onsubmit="return confirm('Confermi eliminazione definitiva del tesseramento?');"
+                    style="display:inline;">
+                <button class="btn btn-outline-danger btn-sm" title="Elimina">
+                  <i data-lucide="trash"></i>
+                </button>
+              </form>
+            {% endif %}
+
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">
+            Nessun tesseramento presente
+          </td>
+        </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+{% endblock %}

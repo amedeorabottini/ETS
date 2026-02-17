@@ -1,0 +1,94 @@
+<!-- ================================================= -->
+<!-- SEZIONALI RICEVUTE -->
+<!-- ================================================= -->
+
+<h3>Imposta sezionali ricevute</h3>
+
+<form method="post" action="{{ url_for('salva_sezionali_ricevute') }}">
+
+<table class="sezionali-table">
+    <tr>
+        <th style="width:60px;">Default</th>
+        <th style="width:200px;">Nome sezionale</th>
+        <th style="width:120px;">Codice</th>
+        <th style="width:90px;">Modifica</th>
+        <th style="width:90px;">Elimina</th>
+    </tr>
+
+    {% for s in sezionali %}
+    <tr>
+        <!-- DEFAULT -->
+        <td style="text-align:center;">
+            <input type="radio"
+                   name="sez_default"
+                   value="{{ s.id }}"
+                   {% if s.is_default %}checked{% endif %}>
+        </td>
+
+        <!-- NOME -->
+        <td>
+            <input type="hidden" name="sez_id[]" value="{{ s.id }}">
+            <input type="text"
+                   name="sez_nome[]"
+                   value="{{ s.nome }}"
+                   class="sez-input"
+                   readonly>
+        </td>
+
+        <!-- CODICE -->
+        <td>
+            <input type="text"
+                   name="sez_codice[]"
+                   value="{{ s.codice or '' }}"
+                   class="sez-input"
+                   {% if s.is_default %}placeholder="(neutro)"{% endif %}
+                   readonly>
+        </td>
+
+        <!-- MODIFICA -->
+        <td style="text-align:center;">
+            <button type="button"
+                    class="btn-modifica"
+                    onclick="abilitaModifica(this)">
+                Modifica
+            </button>
+        </td>
+
+        <!-- ELIMINA -->
+        <td style="text-align:center;">
+            {% if s.is_default %}
+                <span style="color:#999;">—</span>
+
+            {% elif s.usato %}
+                <button type="button"
+                        class="btn-elimina btn-disabled"
+                        title="Sezionale già utilizzato">
+                    Elimina
+                </button>
+
+            {% else %}
+                <button type="submit"
+                        class="btn-elimina"
+                        formmethod="post"
+                        formaction="{{ url_for('elimina_sezionale_ricevuta', sezionale_id=s.id) }}"
+                        onclick="return confirm('Eliminare il sezionale {{ s.nome }}?');">
+                    Elimina
+                </button>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<h4>Aggiungi nuovo sezionale</h4>
+<input type="text" name="nuovo_nome" placeholder="Nome (es. Bonifico)">
+<input type="text" name="nuovo_codice" placeholder="Codice (es. BON)">
+
+<br><br>
+<button type="submit">💾 Salva sezionali</button>
+
+<hr style="border:0; border-top:1px solid #000; margin:30px 0;">
+
+</form>

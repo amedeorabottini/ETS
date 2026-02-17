@@ -1,0 +1,42 @@
+{% macro documenti_actions(files) %}
+
+{% if files %}
+  <div class="d-flex gap-1 flex-wrap">
+
+    {% for f in files %}
+      <div class="btn-group btn-group-sm shadow-sm">
+
+        <!-- VISUALIZZA (popup browser) -->
+        <a class="btn btn-outline-primary"
+           title="Visualizza"
+           target="_blank"
+           href="{{ url_for('view_documento', documento_id=f.id) }}">
+          <i data-lucide="eye"></i>
+        </a>
+
+        <!-- DOWNLOAD -->
+        <a class="btn btn-outline-secondary"
+           title="Scarica"
+           href="{{ url_for('download_documento', documento_id=f.id) }}">
+          <i data-lucide="download"></i>
+        </a>
+
+        <!-- ELIMINA -->
+        <form method="post"
+              action="{{ url_for('elimina_documento', documento_id=f.id) }}"
+              onsubmit="return confirm('Eliminare il file?');">
+          <button class="btn btn-outline-danger"
+                  title="Elimina">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </form>
+
+      </div>
+    {% endfor %}
+
+  </div>
+{% else %}
+  <span class="text-muted small">—</span>
+{% endif %}
+
+{% endmacro %}

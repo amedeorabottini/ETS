@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Scadenziario</h2>
+
+    <form method="post" action="{{ url_for('scadenziario_bp.genera_scadenze_quote') }}"
+          onsubmit="return confirm('Vuoi generare/aggiornare le scadenze quote per questo esercizio?');">
+      <input type="hidden" name="esercizio_id" value="{{ esercizio_id }}">
+      <button class="btn btn-outline-primary">🔄 Genera / aggiorna quote</button>
+    </form>
+  </div>
+
+  <!-- FILTRI (GET) -->
+  <div class="card mb-3">
+    <div class="card-header">Filtri</div>
+    <div class="card-body">
+      <form method="get" action="{{ url_for('scadenziario_bp.scadenziario_matrice') }}">
+        <div class="row g-2 align-items-end">
+
+          <div class="col-md-2">
+            <label class="form-label">Anno</label>
+            <label class="form-label">Esercizio</label>
+            <select name="esercizio_id" class="form-select"
+                    onchange="this.form.submit()">
+
+            {% for e in esercizi %}
+                <option value="{{ e.id }}"
+                {% if e.id == esercizio_id %}selected{% endif %}>
+                {{ e.anno }}
+                </option>
+            {% endfor %}
+
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Socio</label>
+            <input type="text" name="q" class="form-control" value="{{ filtri.q }}" placeholder="Cognome o nome...">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Quota</label>
+            <select class="form-select" name="quota_id" id="quota_id">
+              <option value="">Tutte</option>
+              {% for q in quote %}
+                <option value="{{ q.id }}"
+                        data-periodicita="{{ q.periodicita }}"
+                        {% if filtri.quota_id|string == q.id|string %}selected{% endif %}>
+                  {{ q.nome }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">Tipo</label>
+            <select class="form-select"
+              name="tipo"
+              id="tipo"
+              onchange="this.form.submit()">
+              <option value="MENSILE" {% if filtri.tipo=='MENSILE' %}selected{% endif %}>Mensili</option>
+              <option value="ANNUALE" {% if filtri.tipo=='ANNUALE' %}selected{% endif %}>Annuali</option>
+              <option value="UNA_TANTUM" {% if filtri.tipo=='UNA_TANTUM' %}selected{% endif %}>Una tantum</option>
+            </select>
+          </div>
+
+          <div class="col-md-2 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Applica</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('scadenziario_bp.scadenziario_matrice') }}">Reset</a>
+          </div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MATRICE -->
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th style="min-width:260px;">Socio / Quota</th>
+              {% for m in mesi %}
+                <th class="text-center">{{ m[5:7] }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+
+          <tbody>
+          {% for r in righe %}
+            <tr>
+              <td>
+                <strong>{{ r.cognome }} {{ r.nome }}</strong><br>
+                <span class="text-muted small">{{ r.quota_nome }}</span>
+              </td>
+
+              {% for m in mesi %}
+                {% set cell = r.mesi[m] %}
+                <td class="text-center">
+
+                  {% if cell.stato == 'NON_PRESENTE' %}
+                    <span class="dot dot-light" title="Non presente"></span>
+
+                  {% elif cell.stato == 'PAGATA' %}
+                    <span class="dot dot-green" title="Pagata"></span>
+
+                  {% elif cell.stato == 'DA_PAGARE' %}
+                    <span class="dot dot-red js-emetti-ricevuta"
+                          role="button"
+                          title="Da pagare (clicca)"
+                          data-quota-socio-id="{{ cell.quota_socio_id }}"></span>
+
+                  {% elif cell.stato == 'ANNULLATA' %}
+                    <span class="dot dot-gray" title="Annullata"></span>
+
+                  {% else %}
+                    <span class="dot dot-light"></span>
+                  {% endif %}
+
+                </td>
+              {% endfor %}
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="{{ 1 + mesi|length }}" class="text-center text-muted py-4">
+                Nessun risultato.
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+.dot{
+  display:inline-block;
+  width:12px;height:12px;
+  border-radius:50%;
+}
+.dot-green{ background:#2ecc71; }
+.dot-red{ background:#e74c3c; cursor:pointer; }
+.dot-gray{ background:#bdc3c7; }
+.dot-light{ background:#eef2f7; }
+</style>
+<!-- ========================= -->
+<!-- MODALE EMETTI RICEVUTA -->
+<!-- ========================= -->
+<div id="modal-emetti-ricevuta" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h5>Emettere ricevuta?</h5>
+
+    <p class="text-muted">
+      Vuoi emettere la ricevuta per questa quota?
+    </p>
+
+    <div class="modal-actions">
+      <button type="button"
+              class="btn btn-secondary"
+              id="btn-annulla-ricevuta">
+        Annulla
+      </button>
+
+      <form method="get" action="{{ url_for('ricevute_bp.nuova_ricevuta') }}">
+        <input type="hidden"
+              name="quota_socio_id"
+              id="modal-quota-socio-id">
+        <button type="submit" class="btn btn-danger">
+          Emetti ricevuta
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+<style>
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.modal-box{
+  background:#fff;
+  padding:20px;
+  border-radius:6px;
+  width:360px;
+  max-width:90%;
+}
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:15px;
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const modal = document.getElementById("modal-emetti-ricevuta");
+  const inputQuotaSocio = document.getElementById("modal-quota-socio-id");
+  const btnAnnulla = document.getElementById("btn-annulla-ricevuta");
+
+  document.querySelectorAll(".js-emetti-ricevuta").forEach(el => {
+    el.addEventListener("click", () => {
+      document.getElementById("modal-quota-socio-id").value =
+        el.dataset.quotaSocioId;
+      document.getElementById("modal-emetti-ricevuta").style.display = "flex";
+    });
+  });
+
+  if (btnAnnulla) {
+    btnAnnulla.addEventListener("click", function () {
+      modal.style.display = "none";
+      inputQuotaSocio.value = "";
+    });
+    // ✅ auto-imposta "Tipo" in base alla quota selezionata
+  const quotaSelect = document.getElementById("quota_id");
+  const tipoSelect = document.getElementById("tipo");
+
+  if (quotaSelect && tipoSelect) {
+    quotaSelect.addEventListener("change", () => {
+      const opt = quotaSelect.options[quotaSelect.selectedIndex];
+      const periodicita = opt?.dataset?.periodicita;
+
+      // se seleziono "Tutte" non forzo niente
+      if (!quotaSelect.value) return;
+
+      if (periodicita) {
+        tipoSelect.value = periodicita;  // MENSILE / ANNUALE / UNA_TANTUM
+      }
+
+      // invio subito (così non devi cliccare "Applica")
+      quotaSelect.form.submit();
+    });
+  }
+  
+  }
+
+});
+</script>
+{% endblock %}

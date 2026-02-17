@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Impostazioni → Conti correnti</h2>
+
+<!-- CONTO FINANZIARIO DI DEFAULT -->
+<form method="post">
+    <input type="hidden" name="azione" value="salva_default">
+
+    <h3>Conto finanziario di default</h3>
+
+    <select name="conto_default">
+        <option value="">— nessun default —</option>
+
+        <option value="CASSA"
+            {% if conto_default == 'CASSA' %}selected{% endif %}>
+            CASSA
+        </option>
+
+        {% for c in conti_correnti %}
+            <option value="{{ c.id }}"
+                {% if conto_default == c.id|string %}selected{% endif %}>
+                {{ c.codice }} – {{ c.nome }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+    <button type="submit">Salva impostazioni</button>
+</form>
+
+<p style="font-size:13px;color:#666;">
+Se un’operazione non ha un conto selezionato:<br>
+• default = CASSA → registrata in cassa<br>
+• default = conto → registrata su quel conto
+</p>
+
+<hr>
+
+{% include "partials/conti_correnti.html" %}
+
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Gestione quote</h2>
+
+<h4>Nuova quota</h4>
+
+<form method="post" style="max-width:500px;">
+
+  <div class="mb-3">
+    <label class="form-label">Nome quota</label>
+    <input type="text" name="nome" required class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Descrizione</label>
+    <input type="text" name="descrizione" class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Importo (€)</label>
+    <input type="number" name="importo" step="0.01" required class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Periodicità</label>
+    <select name="periodicita" required class="form-select">
+      <option value="ANNUALE">Annuale</option>
+      <option value="MENSILE">Mensile</option>
+      <option value="UNA_TANTUM">Una tantum</option>
+    </select>
+  </div>
+
+  <!-- ✅ BOTTONE FIXATO -->
+  <button type="submit" class="btn btn-success">
+    ➕ Crea quota
+  </button>
+
+</form>
+
+<hr>
+
+<h4>Quote esistenti</h4>
+
+<table class="table table-hover align-middle w-100">
+  <thead class="table-light">
+    <tr>
+      <th>Nome</th>
+      <th>Descrizione</th>
+      <th class="text-end">Importo</th>
+      <th>Periodicità</th>
+      <th class="text-center">Azioni</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for q in quote %}
+    <tr>
+      <td>{{ q.nome }}</td>
+      <td>{{ q.descrizione or "" }}</td>
+      <td class="text-end">{{ "%.2f"|format(q.importo) }} €</td>
+      <td>{{ q.periodicita }}</td>
+      <td class="text-center">
+
+        <!-- ✏️ MODIFICA -->
+        <a href="{{ url_for('modifica_quota', quota_id=q.id) }}"
+           class="btn btn-outline-primary btn-sm">
+          Modifica
+        </a>
+
+        <!-- 🗑 ELIMINA -->
+        <form method="post"
+              action="{{ url_for('elimina_quota', quota_id=q.id) }}"
+              style="display:inline;"
+              onsubmit="return confirm('Eliminare definitivamente la quota?');">
+          <button type="submit" class="btn btn-danger btn-sm">
+            🗑 Elimina
+          </button>
+        </form>
+
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

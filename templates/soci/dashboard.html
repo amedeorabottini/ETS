@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Dashboard Soci</h2>
+
+<div class="dashboard-grid">
+
+  <!-- AREA SOCI -->
+  <a href="{{ url_for('libro_soci') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="book-user"></i>
+    </div>
+    <div class="card-text">
+      <h3>Libro Soci</h3>
+      <p>Documento ufficiale soci (consultivo)</p>
+    </div>
+  </a>
+
+  <a href="{{ url_for('gestione_soci.gestione_soci') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="users"></i>
+    </div>
+    <div class="card-text">
+      <h3>Gestione Soci</h3>
+      <p>Centro operativo quotidiano</p>
+    </div>
+  </a>
+
+  <!-- QUOTE -->
+  <a href="{{ url_for('soci_quote') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="calendar"></i>
+    </div>
+    <div class="card-text">
+      <h3>Quote iscrizione / rinnovi</h3>
+      <p>Griglia soci × anni</p>
+    </div>
+  </a>
+
+  <a href="{{ url_for('scadenziario_bp.scadenziario_matrice') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="alarm-clock"></i>
+    </div>
+    <div class="card-text">
+      <h3>Scadenziario Soci</h3>
+      <p>Scadenze mensili per anno</p>
+    </div>
+  </a>
+
+  <!-- TESSERAMENTI -->
+<a href="{{ url_for('tesseramenti_bp.storico_tesseramenti_socio') }}" class="dashboard-card">
+      <div class="card-icon">
+      <i data-lucide="badge-check"></i>
+    </div>
+    <div class="card-text">
+      <h3>Tesseramenti</h3>
+      <p>Enti affiliativi</p>
+    </div>
+  </a>
+
+  <!-- CERTIFICATI -->
+  <a href="{{ url_for('certificati_bp.storico_certificati_medici_socio') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="heart-pulse"></i>
+    </div>
+    <div class="card-text">
+      <h3>Certificati Medici</h3>
+      <p>Agonistici / non agonistici</p>
+    </div>
+  </a>
+
+  <!-- DOCUMENTI -->
+  <a href="{{ url_for('soci_documenti') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="folder"></i>
+    </div>
+    <div class="card-text">
+      <h3>Modulistica Soci</h3>
+      <p>Documenti e allegati</p>
+    </div>
+  </a>
+
+  <!-- RIMBORSI -->
+  <a href="{{ url_for('rimborsi_soci') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="receipt"></i>
+    </div>
+    <div class="card-text">
+      <h3>Rimborsi Spese</h3>
+      <p>Flusso richieste → contabilità</p>
+    </div>
+  </a>
+
+  
+
+  <!-- ONBOARDING -->
+  <a href="{{ url_for('richieste_adesione') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="user-plus"></i>
+    </div>
+    <div class="card-text">
+      <h3>Richieste di adesione</h3>
+      <p>Onboarding nuovi soci</p>
+    </div>
+  </a>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Impostazioni</h2>
+
+<div class="dashboard-grid">
+
+  <!-- CONTI CORRENTI -->
+  <a href="{{ url_for('impostazioni_conti_correnti') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="credit-card"></i>
+    </div>
+    <div class="card-text">
+      <h3>Conti correnti</h3>
+      <p>Gestione conti e conto finanziario di default</p>
+    </div>
+  </a>
+
+  <!-- CONTABILITÀ -->
+  <a href="{{ url_for('impostazioni_contabilita') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="calculator"></i>
+    </div>
+    <div class="card-text">
+      <h3>Contabilità</h3>
+      <p>Wizard regole e sezionali ricevute</p>
+    </div>
+  </a>
+
+  <!-- ENTI DI AFFILIAZIONE -->
+  <a href="{{ url_for('impostazioni_enti_affiliazione') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="network"></i>
+    </div>
+    <div class="card-text">
+      <h3>Enti di affiliazione</h3>
+      <p>Configurazione enti per tesseramenti e certificazioni</p>
+    </div>
+  </a>
+
+  <!-- ========================= -->
+  <!-- IMPOSTA QUOTE (ANAGRAFICA) -->
+  <!-- ========================= -->
+
+  <a href="{{ url_for('gestione_quote') }}" class="dashboard-card">
+    <div class="card-icon">
+      <i data-lucide="coins"></i>
+    </div>
+    <div class="card-text">
+      <h3>Imposta quote</h3>
+      <p>Definizione quote annuali, mensili e una tantum</p>
+    </div>
+  </a>
+
+  <!-- ANAGRAFICA ASSOCIAZIONE -->
+<a href="{{ url_for('impostazioni.associazione') }}" class="dashboard-card">
+  <div class="card-icon">
+    <i data-lucide="building-2"></i>
+  </div>
+  <div class="card-text">
+    <h3>Anagrafica associazione</h3>
+    <p>Dati ufficiali, sede legale e riferimenti fiscali</p>
+  </div>
+</a>
+
+</div>
+
+{% endblock %}

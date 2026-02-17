@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Bilancio – Esercizio {{ anno }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h1, h2 { margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #999; padding: 6px 8px; vertical-align: top; }
+        th { background-color: #f0f0f0; text-align: center; }
+        td.importo { text-align: right; white-space: nowrap; float: right; }
+        .totale { font-weight: bold; background-color: #fafafa; }
+        .risultato { font-weight: bold; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<h1>Bilancio – Esercizio {{ anno }}</h1>
+
+{% set R = bilancio["RISULTATI"] %}
+
+<!-- ========================= SEZIONI A–E ========================= -->
+{% for key in ["A","B","C","D","E"] %}
+<h2>{{ key }}) {{ bilancio[key]["titolo"] }}</h2>
+{% set S = bilancio[key] %}
+<table>
+<tr><th>USCITE</th><th>ENTRATE</th></tr>
+{% set max_righe = [S["uscite"]|length, S["entrate"]|length]|max %}
+{% for i in range(max_righe) %}
+<tr>
+<td>{% if i < S["uscite"]|length %}{{ S["uscite"][i]["codice"] }} – {{ S["uscite"][i]["descrizione"] }}
+<span class="importo">{{ "%.2f"|format(S["uscite"][i]["importo"]) }}</span>{% endif %}</td>
+<td>{% if i < S["entrate"]|length %}{{ S["entrate"][i]["codice"] }} – {{ S["entrate"][i]["descrizione"] }}
+<span class="importo">{{ "%.2f"|format(S["entrate"][i]["importo"]) }}</span>{% endif %}</td>
+</tr>
+{% endfor %}
+<tr class="totale">
+<td>Totale uscite: {{ "%.2f"|format(S["totale_uscite"]) }}</td>
+<td>Totale entrate: {{ "%.2f"|format(S["totale_entrate"]) }}</td>
+</tr>
+</table>
+<div class="risultato">Avanzo / Disavanzo: {{ "%.2f"|format(S["risultato"]) }}</div>
+{% endfor %}
+
+<!-- ========================= RISULTATI (prima di I) ========================= -->
+
+<h2>Risultati</h2>
+
+<form method="POST" action="{{ url_for('salva_imposte') }}">
+<table>
+<colgroup><col style="width:80%"><col style="width:20%"></colgroup>
+
+<tr>
+<td>Avanzo / disavanzo d’esercizio prima delle imposte</td>
+<td class="importo">{{ "%.2f"|format(R["pre_imposte"]) }}</td>
+</tr>
+
+<tr>
+<td>Imposte</td>
+<td class="importo">
+<input type="number" name="imposte" step="0.01"
+value="{{ "%.2f"|format(R["imposte"]) }}" style="width:120px;text-align:right;">
+</td>
+</tr>
+
+<tr class="totale">
+<td>Avanzo / disavanzo d’esercizio prima di investimenti e disinvestimenti</td>
+<td class="importo">{{ "%.2f"|format(R["pre_investimenti"]) }}</td>
+</tr>
+</table>
+<button type="submit">Salva imposte</button>
+</form>
+
+<!-- ========================= SEZIONE I ========================= -->
+
+<h2>I) {{ bilancio["I"]["titolo"] }}</h2>
+{% set I = bilancio["I"] %}
+<table>
+<tr><th>USCITE</th><th>ENTRATE</th></tr>
+{% set max_righe = [I["uscite"]|length, I["entrate"]|length]|max %}
+{% for i in range(max_righe) %}
+<tr>
+<td>{% if i < I["uscite"]|length %}{{ I["uscite"][i]["codice"] }} – {{ I["uscite"][i]["descrizione"] }}
+<span class="importo">{{ "%.2f"|format(I["uscite"][i]["importo"]) }}</span>{% endif %}</td>
+<td>{% if i < I["entrate"]|length %}{{ I["entrate"][i]["codice"] }} – {{ I["entrate"][i]["descrizione"] }}
+<span class="importo">{{ "%.2f"|format(I["entrate"][i]["importo"]) }}</span>{% endif %}</td>
+</tr>
+{% endfor %}
+<tr class="totale">
+<td>Totale uscite: {{ "%.2f"|format(I["totale_uscite"]) }}</td>
+<td>Totale entrate: {{ "%.2f"|format(I["totale_entrate"]) }}</td>
+</tr>
+</table>
+
+<!-- ========================= IMPOSTE SU INVESTIMENTI ========================= -->
+
+<form method="POST" action="{{ url_for('salva_imposte_i') }}">
+<table>
+<colgroup><col style="width:80%"><col style="width:20%"></colgroup>
+<tr>
+<td>Imposte (investimenti e finanziamenti)</td>
+<td class="importo">
+<input type="number" name="imposte_i" step="0.01"
+value="{{ "%.2f"|format(R["imposte_i"]) }}" style="width:120px;text-align:right;">
+</td>
+</tr>
+</table>
+<button type="submit">Salva imposte investimenti</button>
+</form>
+
+<div class="risultato">
+Avanzo / Disavanzo investimenti: {{ "%.2f"|format(R["da_investimenti"]) }}
+</div>
+
+<!-- ========================= RISULTATI FINALI ========================= -->
+
+<h2>Risultati finali</h2>
+<table>
+<colgroup><col style="width:80%"><col style="width:20%"></colgroup>
+<tr>
+<td>Avanzo / Disavanzo prima di investimenti</td>
+<td class="importo">{{ "%.2f"|format(R["pre_investimenti"]) }}</td>
+</tr>
+<tr>
+<td>Avanzo / Disavanzo investimenti</td>
+<td class="importo">{{ "%.2f"|format(R["da_investimenti"]) }}</td>
+</tr>
+<tr class="totale">
+<td>Avanzo / Disavanzo complessivo</td>
+<td class="importo">{{ "%.2f"|format(R["complessivo"]) }}</td>
+</tr>
+</table>
+
+<!-- ========================================================= -->
+<!-- SALDO CASSA E BANCA -->
+<!-- ========================================================= -->
+
+{% set ns = namespace(cassa=0, banca=0) %}
+
+{% for r in bilancio["CB"]["voci"] %}
+  {% if r.descrizione == "CASSA" %}
+    {% set ns.cassa = r.importo %}
+  {% else %}
+    {% set ns.banca = ns.banca + r.importo %}
+  {% endif %}
+{% endfor %}
+
+{% set totale_cassa_banca = ns.cassa + ns.banca %}
+
+<h2>Liquidità</h2>
+
+<table>
+<colgroup>
+  <col style="width:80%">
+  <col style="width:20%">
+</colgroup>
+
+<tr>
+  <td>1) Cassa e banca</td>
+  <td class="importo">{{ "%.2f"|format(totale_cassa_banca) }}</td>
+</tr>
+
+<tr>
+  <td>2) Cassa</td>
+  <td class="importo">{{ "%.2f"|format(ns.cassa) }}</td>
+</tr>
+
+<tr>
+  <td>3) Banca</td>
+  <td class="importo">{{ "%.2f"|format(ns.banca) }}</td>
+</tr>
+</table>
+
+<!-- ========================================================= -->
+<!-- COSTI E PROVENTI FIGURATIVI -->
+<!-- ========================================================= -->
+
+<h2>Costi e proventi figurativi</h2>
+
+{% set F = bilancio["F"] %}
+{% set tot_costi_fig = (F.get('CF1', 0) | float) + (F.get('CF2', 0) | float) %}
+{% set tot_proventi_fig = (F.get('PF1', 0) | float) + (F.get('PF2', 0) | float) %}
+
+<form method="POST" action="{{ url_for('salva_figurativi') }}">
+
+<table>
+    <tr>
+        <th>COSTI FIGURATIVI</th>
+        <th>PROVENTI FIGURATIVI</th>
+    </tr>
+
+    <tr>
+        <td>
+            Costi figurativi attività di interesse generale
+            <span class="importo">
+                <input type="number"
+                       name="figurativo_CF1"
+                       step="0.01"
+                       value="{{ "%.2f"|format(F.get('CF1', 0)) }}"
+                       style="width:120px;text-align:right;">
+            </span>
+        </td>
+        <td>
+            Proventi figurativi attività di interesse generale
+            <span class="importo">
+                <input type="number"
+                       name="figurativo_PF1"
+                       step="0.01"
+                       value="{{ "%.2f"|format(F.get('PF1', 0)) }}"
+                       style="width:120px;text-align:right;">
+            </span>
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            Costi figurativi attività diverse
+            <span class="importo">
+                <input type="number"
+                       name="figurativo_CF2"
+                       step="0.01"
+                       value="{{ "%.2f"|format(F.get('CF2', 0)) }}"
+                       style="width:120px;text-align:right;">
+            </span>
+        </td>
+        <td>
+            Proventi figurativi attività diverse
+            <span class="importo">
+                <input type="number"
+                       name="figurativo_PF2"
+                       step="0.01"
+                       value="{{ "%.2f"|format(F.get('PF2', 0)) }}"
+                       style="width:120px;text-align:right;">
+            </span>
+        </td>
+    </tr>
+
+    <!-- ✅ RIGA TOTALI (MANCANTE) -->
+    <tr class="totale">
+        <td>
+            Totale costi figurativi:
+            <span class="importo">{{ "%.2f"|format(tot_costi_fig) }}</span>
+        </td>
+        <td>
+            Totale proventi figurativi:
+            <span class="importo">{{ "%.2f"|format(tot_proventi_fig) }}</span>
+        </td>
+    </tr>
+</table>
+
+<button type="submit">Salva costi e proventi figurativi</button>
+
+</form>
+
+<h2>
+Nota attestante il carattere secondario e strumentale di cui all'art. 6 – attività diverse
+</h2>
+
+<p>
+Le attività diverse rispetto a quelle di interesse generale non potranno superare, in ciascun esercizio,
+uno dei due seguenti parametri (DM 107/2021 – comma 1):
+</p>
+
+<p>
+a) i relativi <strong>RICAVI</strong> non devono essere superiori al <strong>30%</strong> delle
+<strong>ENTRATE complessive</strong> dell’Ente del Terzo Settore;
+</p>
+
+<p>
+b) i relativi <strong>RICAVI</strong> non devono essere superiori al <strong>66%</strong> dei
+<strong>COSTI complessivi</strong> dell’Ente del Terzo Settore.
+</p>
+
+{% set ricavi_diverse = bilancio["B"]["totale_entrate"] %}
+
+{% set entrate_totali =
+    bilancio["A"]["totale_entrate"] +
+    bilancio["B"]["totale_entrate"] +
+    bilancio["C"]["totale_entrate"] +
+    bilancio["D"]["totale_entrate"] +
+    bilancio["E"]["totale_entrate"]
+%}
+
+{% set costi_totali =
+    bilancio["A"]["totale_uscite"] +
+    bilancio["B"]["totale_uscite"] +
+    bilancio["C"]["totale_uscite"] +
+    bilancio["D"]["totale_uscite"] +
+    bilancio["E"]["totale_uscite"]
+%}
+
+{% set perc_ricavi_su_entrate = (ricavi_diverse / entrate_totali * 100) if entrate_totali > 0 else 0 %}
+{% set perc_ricavi_su_costi = (ricavi_diverse / costi_totali * 100) if costi_totali > 0 else 0 %}
+
+{% set test_a_ok = perc_ricavi_su_entrate <= 30 %}
+{% set test_b_ok = perc_ricavi_su_costi <= 66 %}
+
+<table>
+<colgroup>
+  <col style="width:60%">
+  <col style="width:20%">
+  <col style="width:20%">
+</colgroup>
+
+<tr>
+  <th>Parametro</th>
+  <th>Valore</th>
+  <th>Esito</th>
+</tr>
+
+<tr>
+  <td>
+    Ricavi attività diverse / Entrate complessive (≤ 30%)
+  </td>
+  <td class="importo">
+    {{ "%.2f"|format(perc_ricavi_su_entrate) }} %
+  </td>
+  <td>
+    {% if test_a_ok %}
+      ✅ Conforme
+    {% else %}
+      ❌ Non conforme
+    {% endif %}
+  </td>
+</tr>
+
+<tr>
+  <td>
+    Ricavi attività diverse / Costi complessivi (≤ 66%)
+  </td>
+  <td class="importo">
+    {{ "%.2f"|format(perc_ricavi_su_costi) }} %
+  </td>
+  <td>
+    {% if test_b_ok %}
+      ✅ Conforme
+    {% else %}
+      ❌ Non conforme
+    {% endif %}
+  </td>
+</tr>
+
+<tr class="totale">
+  <td colspan="3">
+    Esito complessivo:
+    {% if test_a_ok or test_b_ok %}
+      ✅ Requisito di secondarietà e strumentalità rispettato
+    {% else %}
+      ❌ Requisito NON rispettato
+    {% endif %}
+  </td>
+</tr>
+</table>
+
+</body>
+</html>

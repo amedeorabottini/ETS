@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% from "_socio_header.html" import socio_header %}
+
+{{ socio_header("Adesioni e rinnovi", soci, socio) }}
+
+{% if not socio %}
+  <div class="alert alert-info">
+    Seleziona un socio per visualizzare adesioni e rinnovi.
+  </div>
+{% endif %}
+
+{% if socio %}
+
+<div class="card-body p-0">
+
+  <table class="table table-sm mb-0">
+    <thead>
+      <tr>
+        <th>Anno</th>
+        <th>Tipo</th>
+        <th>Stato</th>
+        <th class="text-center">Azioni</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      {% for riga in righe_adesioni %}
+        <tr>
+        <td>{{ riga.anno }}</td>
+        <td>{{ riga.tipo }}</td>
+        <td>
+        {% if riga.stato == "VERDE" %}
+            <span class="badge bg-success">Regolare</span>
+        {% elif riga.stato == "ROSSO" %}
+            <span class="badge bg-danger">Da completare</span>
+        {% elif riga.stato == "GRIGIO" %}
+            <span class="badge bg-secondary">Non richiesto</span>
+        {% else %}
+            <span class="badge bg-light text-dark">—</span>
+        {% endif %}
+        </td>
+        <td class="text-center">
+
+        {% if riga.stato == "GRIGIO" %}
+            —
+        
+        {% elif riga.stato == "ROSSO" %}
+            <a href="{{ url_for('adesioni.stampa_adesione', socio_id=socio.id, anno=riga.anno) }}"
+            class="btn btn-outline-secondary btn-sm btn-icon"
+            target="_blank"
+            title="Stampa modulo">
+            <i data-lucide="printer"></i>
+            </a>
+
+            <form method="post"
+                action="{{ url_for('adesioni.upload_adesione', socio_id=socio.id, anno=riga.anno) }}"
+                enctype="multipart/form-data"
+                style="display:inline;">
+            
+            <input type="file"
+                    name="file_adesione"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    required
+                    style="display:none;"
+                    onchange="this.form.submit()">
+
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm btn-icon"
+                    onclick="this.previousElementSibling.click()"
+                    title="Carica scansione">
+                <i data-lucide="upload"></i>
+            </button>
+            </form>
+
+        {% elif riga.stato == "VERDE" %}
+            <a href="{{ url_for('adesioni.view_adesione', socio_id=socio.id, anno=riga.anno) }}"
+              class="btn btn-outline-secondary btn-sm btn-icon"
+              title="Visualizza modulo"
+              target="_blank">
+                <i data-lucide="eye"></i>
+            </a>
+
+            <form method="post"
+                  action="{{ url_for('adesioni.delete_adesione', socio_id=socio.id, anno=riga.anno) }}"
+                  style="display:inline;"
+                  onsubmit="return confirm('Confermi eliminazione del modulo caricato?');">
+
+                <button type="submit"
+                        class="btn btn-outline-danger btn-sm btn-icon"
+                        title="Elimina modulo">
+                    <i data-lucide="trash"></i>
+                </button>
+            </form>
+        {% endif %}
+
+        </td>
+        </tr>
+        {% else %}
+        <tr>
+        <td colspan="4" class="text-center text-muted py-3">
+            Nessun dato disponibile
+        </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+  </table>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

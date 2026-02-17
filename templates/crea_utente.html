@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Crea nuovo utente</h2>
+
+<form method="post">
+  <div>
+    Username:<br>
+    <input type="text" name="username" required>
+  </div>
+  <br>
+  <div>
+    Password:<br>
+    <input type="password" name="password" required>
+  </div>
+  <br>
+  <button type="submit" class="btn btn-success">Crea utente</button>
+</form>
+
+{% endblock %}

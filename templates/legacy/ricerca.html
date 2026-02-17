@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Ricerca operazioni</h2>
+
+<div style="display:flex; align-items:flex-start; gap:30px;">
+
+    <!-- ===================== -->
+    <!-- COLONNA SINISTRA -->
+    <!-- ===================== -->
+    <div style="flex:3;">
+
+        <form method="post">
+
+        <h4>Data</h4>
+        Da:
+        <input type="date" name="data_da" value="{{ request.form.data_da }}">
+        A:
+        <input type="date" name="data_a" value="{{ request.form.data_a }}">
+
+        <h4>Importo</h4>
+        Min:
+        <input type="number" step="0.01" name="importo_min" value="{{ request.form.importo_min }}">
+        Max:
+        <input type="number" step="0.01" name="importo_max" value="{{ request.form.importo_max }}">
+
+        <h4>Descrizione</h4>
+        <input type="text" name="testo" style="width:300px;"
+               value="{{ request.form.testo }}">
+
+               
+        <h4>Conto finanziario</h4>
+        <select name="conto">
+            <option value="">-- tutti --</option>
+            <option value="CASSA"
+                {% if request.form.conto == "CASSA" %}selected{% endif %}>
+                CASSA
+            </option>
+
+            {% for c in conti_correnti %}
+            <option value="{{ c.id }}"
+                {% if request.form.conto == c.id|string %}selected{% endif %}>
+                {{ c.codice }} - {{ c.nome }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <h4>Classificazione</h4>
+        <select name="classificazione">
+          <option value="">-- tutte --</option>
+          {% for c in conti %}
+            <option value="{{ c.id }}"
+                {% if request.form.classificazione == c.id|string %}selected{% endif %}>
+                {{ c.codice }} - {{ c.descrizione }}
+            </option>
+          {% endfor %}
+        </select>
+
+        <br><br>
+        <button type="submit">Cerca</button>
+        </form>
+
+        <hr>
+
+        <table width="100%" border="1" cellpadding="6" style="border-collapse:collapse;">
+        <tr>
+          <th style="width:110px;">Data</th>
+          <th style="width:30%;">Descrizione</th>
+          <th style="text-align:right; width:90px;">Entrate</th>
+          <th style="text-align:right; width:90px;">Uscite</th>
+          <th>Classificazione</th>
+          <th style="width:140px;">Conto</th>
+          <th style="width:120px;"></th>
+        </tr>
+
+        {% for r in risultati %}
+        <tr>
+
+          <td style="white-space:nowrap;">{{ r.data }}</td>
+
+          <td>{{ r.descrizione }}</td>
+
+          
+          <!-- ENTRATA -->
+          <td style="text-align:right;">
+            {% if r.tipo == 'E' %}
+                {{ "%.2f"|format(r.importo) }}
+            {% endif %}
+          </td>
+
+          <!-- USCITA -->
+          <td style="text-align:right;">
+            {% if r.tipo == 'U' %}
+                {{ "%.2f"|format(r.importo) }}
+            {% endif %}
+          </td>
+
+          <!-- CLASSIFICAZIONE -->
+          <td
+            {% if r.classificazione_id is none %}
+              style="color:#c00000; font-style:italic;"
+            {% endif %}
+          >
+            {% if r.classificazione_id is none %}
+              💱 Movimento finanziario
+            {% else %}
+              {{ r.classificazione }}
+            {% endif %}
+          </td>
+
+          <td>{{ r.conto }}</td>
+
+          <td style="white-space:nowrap;">
+            <a href="{{ url_for('modifica_operazione', op_id=r.id) }}">Modifica</a>
+            |
+            <form method="post"
+                  action="{{ url_for('elimina_operazione', op_id=r.id) }}"
+                  style="display:inline"
+                  onsubmit="return confirm('Eliminare questa operazione?');">
+                <button type="submit">Elimina</button>
+            </form>
+          </td>
+
+        </tr>
+        {% endfor %}
+        </table>
+
+    </div>
+
+    <!-- ===================== -->
+    <!-- COLONNA DESTRA – SALDI -->
+    <!-- ===================== -->
+    <div style="flex:1; border:1px solid #ccc; padding:15px; background:#f9f9f9;">
+        <h4>Saldi periodo</h4>
+
+        {% if saldi %}
+        <table width="100%">
+            {% for conto, saldo in saldi.items() %}
+            <tr>
+                <td>{{ conto }}</td>
+                <td style="text-align:right; {% if saldo < 0 %}color:red;{% endif %}">
+                    {{ "%.2f"|format(saldo) }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <em>Nessuna operazione nel periodo</em>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

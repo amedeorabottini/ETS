@@ -1,0 +1,654 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>{% if ricevuta_id %}Modifica ricevuta{% else %}Nuova ricevuta{% endif %}</h2>
+
+<form method="post" action="{{ url_for('ricevute_bp.salva_ricevuta') }}">
+    
+
+  
+{% if ricevuta_id %}
+  <input type="hidden" name="ricevuta_id" value="{{ ricevuta_id }}">
+{% endif %}
+ 
+<script>
+  window.IS_EDIT = {{ 'true' if is_edit else 'false' }};
+  window.RIGHE_ESISTENTI = {{ righe_esistenti|tojson }};
+  window.RICEVUTA_TESTA = {{ (ricevuta or {})|tojson }};
+</script>
+  
+<!-- ===================== -->
+<!-- DATI RICEVUTA -->
+<!-- ===================== -->
+<h4>Dati ricevuta</h4>
+
+<table cellpadding="6">
+<tr>
+  <td>Data ricevuta</td>
+  <td>
+    <input type="date"
+       name="data_emissione"
+       value="{{ (ricevuta.data_emissione if ricevuta and ricevuta.data_emissione else oggi) }}"
+       required>
+  </td>
+</tr>
+
+<tr>
+  <td>Sezionale</td>
+  <td>
+    <select name="sezionale_id" id="sezionale_select" required>
+      {% for s in sezionali %}
+        <option value="{{ s.id }}"
+          {% if ricevuta_id and sezionale_sel and (s.id|string == sezionale_sel|string) %}
+            selected
+          {% elif (not ricevuta_id) and sezionale_default and (s.id == sezionale_default.id) %}
+            selected
+          {% endif %}>
+          {{ s.nome }}{% if s.codice %} ({{ s.codice }}){% endif %}
+        </option>
+      {% endfor %}
+    </select>
+  </td>
+</tr>
+
+<tr>
+  <td>Numero ricevuta</td>
+  <td>
+    <input type="number"
+           id="numero_progressivo"
+           name="numero_progressivo"
+           min="1"
+           value="{{ numero_proposto }}"
+           required>
+    <small style="color:#666;">
+      (proposto automaticamente, modificabile)
+    </small>
+  </td>
+</tr>
+
+<tr>
+  <td>Metodo di pagamento</td>
+  <td>
+    <select name="metodo_pagamento" required>
+      <option value="CASSA"
+        {% if metodo_pagamento_sel == "CASSA" %}selected{% endif %}>
+        CASSA
+      </option>
+
+      {% for c in conti_pagamento %}
+        <option value="{{ c.id }}"
+          {% if metodo_pagamento_sel and (c.id|string == metodo_pagamento_sel|string) %}selected{% endif %}>
+          {{ c.nome }}
+        </option>
+      {% endfor %}
+    </select>
+  </td>
+</tr>
+</table>
+
+<hr>
+
+<!-- ===================== -->
+<!-- SOCIO -->
+<!-- ===================== -->
+<h4>Socio</h4>
+
+<label><b>Seleziona socio:</b></label>
+<select onchange="selezionaSocio(this.value)">
+  <option value="">— Seleziona socio —</option>
+  {% for s in soci %}
+    <option value="{{ s.id }}"
+      {% if socio and socio.id == s.id %}selected{% endif %}>
+      {{ s.cognome }} {{ s.nome }}
+    </option>
+  {% endfor %}
+</select>
+
+<input type="hidden" name="socio_id" value="{{ socio.id if socio else '' }}">
+
+<hr>
+
+<!-- ===================== -->
+<!-- RIGHE RICEVUTA -->
+<!-- ===================== -->
+<h4>Righe ricevuta</h4>
+
+{% if not socio %}
+<p style="color:#777; font-size:13px; margin-bottom:8px;">
+  Seleziona un socio per poter scegliere le quote.
+</p>
+{% endif %}
+
+<table id="righe" border="1" cellpadding="6" width="100%" style="border-collapse:collapse;">
+<tr>
+  <th>Quota / Descrizione</th>
+  <th>Mese</th>
+  <th>Importo (€)</th>
+  <th></th>
+</tr>
+
+
+{% if socio and quota %}
+<tr>
+  <td>
+    {{ quota.nome }}
+    <input type="hidden" name="quota_id[]" value="{{ quota.quota_id }}">
+  </td>
+
+  <td>
+    {{ anno }}
+    {% if mese %}
+      / {{ "%02d"|format(mese) }}
+    {% endif %}
+    <input type="hidden" name="anno[]" value="{{ anno }}">
+    <input type="hidden" name="mese[]" value="{{ mese }}">
+  </td>
+
+  <td>
+    {{ "%.2f"|format(quota.importo) }} €
+    <input type="hidden" name="importo[]" value="{{ quota.importo }}">
+  </td>
+
+  <td></td>
+</tr>
+{% endif %}
+
+
+<tr class="riga-automatica base" style="display:none;">
+  <td>
+   <select name="quota_id[]" onchange="aggiornaImporto(this.closest('tr'))">
+      <option value="">— Seleziona quota —</option>
+      {% for q in quote %}
+        <option value="{{ q.quota_id }}">{{ q.nome }}</option>
+      {% endfor %}
+    </select>
+  </td>
+
+  <td>
+    <select name="anno[]">
+      <option value="">Anno</option>
+      {% set anno_base = anno or oggi[:4]|int %}
+      {% for y in range(anno_base - 1, anno_base + 2) %}
+        <option value="{{ y }}">{{ y }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="mese[]">
+      <option value="">Mese</option>
+      <option value="00">Annuale</option>
+      {% for m in range(1,13) %}
+        <option value="{{ "%02d"|format(m) }}">{{ "%02d"|format(m) }}</option>
+      {% endfor %}
+    </select>
+  </td>
+
+  <td>
+    <input type="number" name="importo[]" step="0.01" readonly>
+  </td>
+
+  <td></td>
+</tr>
+
+<tr class="riga-manuale" style="display:none;">
+  <td><input type="text" name="descrizione_manual[]"></td>
+  <td>
+    <select name="anno_manual[]">
+      <option value="">Anno</option>
+      {% set anno_base = anno or oggi[:4]|int %}
+      {% for y in range(anno_base - 1, anno_base + 2) %}
+        <option value="{{ y }}">{{ y }}</option>
+      {% endfor %}
+    </select>
+    <select name="mese_manual[]">
+      <option value="">Mese</option>
+      {% for m in range(1,13) %}
+        <option value="{{ "%02d"|format(m) }}">{{ "%02d"|format(m) }}</option>
+      {% endfor %}
+    </select>
+  </td>
+  <td><input type="number" name="importo_manual[]" step="0.01"></td>
+  <td><button type="button" onclick="rimuoviRiga(this)">🗑️</button></td>
+</tr>
+
+</table>
+
+<br>
+
+<button type="button"
+        onclick="aggiungiRiga()"
+        {% if not socio %}disabled style="opacity:0.5; cursor:not-allowed;"{% endif %}>
+  ➕ Aggiungi riga automatica
+</button>
+
+<button type="button" onclick="aggiungiRigaManuale()">➕ Aggiungi riga manuale</button>
+
+<br><br>
+
+<button type="submit">
+  {% if ricevuta_id %}💾 Salva modifiche{% else %}💾 Emetti ricevuta{% endif %}
+</button>
+
+</form>
+
+<script>
+  let rigaAttiva = null;
+const quoteImporti = {{ quote_importi | tojson }};
+
+function aggiornaImporto(riga) {
+
+  const quotaId = riga.querySelector('select[name="quota_id[]"]').value;
+  const imp = quoteImporti[quotaId] || "";
+  riga.querySelector('input[name="importo[]"]').value = imp;
+
+  const socioInput = document.querySelector('input[name="socio_id"]');
+  const socioId = socioInput ? parseInt(socioInput.value) : null;
+
+  if (!isNaN(socioId) && quotaId) {
+    rigaAttiva = riga;
+    apriWizardInsoluti(socioId, quotaId);
+  }
+}
+
+function apriWizardInsoluti(socioId, quotaId) {
+  fetch(`/api/insoluti/${socioId}/${quotaId}`)
+    .then(r => r.json())
+    .then(data => {
+      const box = document.getElementById("listaMesi");
+      box.innerHTML = "";
+
+      const perAnno = {};
+
+      (data.mesi || []).forEach(m => {
+        const anno = m.substring(0, 4);
+        if (!perAnno[anno]) perAnno[anno] = [];
+        perAnno[anno].push(m);
+      });
+
+      box.innerHTML = "";
+
+      Object.keys(perAnno).sort().forEach(anno => {
+        box.innerHTML += `
+        <h5 style="margin-top:10px;">
+          <label>
+            <input type="checkbox"
+                  class="anno-checkbox"
+                  data-anno="${anno}"
+                  onchange="toggleAnno('${anno}', this.checked)">
+            ${anno} — Seleziona tutto
+          </label>
+        </h5>
+      `;
+
+        perAnno[anno].forEach(m => {
+          box.innerHTML += `
+          <label style="display:block; margin-left:10px;">
+            <input type="checkbox"
+                  class="mese-checkbox"
+                  data-anno="${anno}"
+                  value="${m}"
+                  onchange="aggiornaTotalePopup()">
+            ${m.substring(5,7)}
+          </label>
+          `;
+        });
+      });
+
+      document.getElementById("wizardInsoluti").style.display = "block";
+    });
+}
+
+function aggiornaTotalePopup() {
+  if (!rigaAttiva) return;
+
+  const quotaId =
+    rigaAttiva.querySelector('select[name="quota_id[]"]').value;
+
+  const importo = parseFloat(quoteImporti[quotaId] || 0);
+
+  const count = document.querySelectorAll(
+    "#listaMesi input.mese-checkbox:checked"
+  ).length;
+
+  const totale = count * importo;
+
+  document.getElementById("totalePopup").innerText =
+    totale.toFixed(2);
+}
+
+function toggleAnno(anno, checked) {
+  document
+    .querySelectorAll(
+      `#listaMesi input.mese-checkbox[data-anno="${anno}"]`
+    )
+    .forEach(cb => cb.checked = checked);
+
+  aggiornaTotalePopup();
+}
+
+function chiudiWizard() {
+  document.getElementById("wizardInsoluti").style.display = "none";
+}
+
+function confermaMesi() {
+  if (!rigaAttiva) {
+    chiudiWizard();
+    return;
+  }
+
+  const mesi = Array.from(
+    document.querySelectorAll("#listaMesi input:checked")
+  ).map(cb => cb.value);
+
+  if (mesi.length === 0) {
+    chiudiWizard();
+    return;
+  }
+
+  // 🔹 quota selezionata nella riga attiva
+  const quotaId = rigaAttiva.querySelector('select[name="quota_id[]"]').value;
+
+  // 1️⃣ primo mese → riga attiva
+  const primo = mesi[0];
+  let anno = primo.substring(0, 4);
+  let mese = primo.substring(5, 7);
+
+  rigaAttiva.querySelector('select[name="anno[]"]').value = anno;
+  rigaAttiva.querySelector('select[name="mese[]"]').value = mese;
+
+  // 2️⃣ mesi successivi → nuove righe CON STESSA QUOTA
+  for (let i = 1; i < mesi.length; i++) {
+    aggiungiRigaConMese(mesi[i], quotaId);
+  }
+
+  rigaAttiva = null;
+  chiudiWizard();
+}
+
+
+
+function aggiungiRigaConMese(meseISO, quotaId) {
+  const table = document.getElementById("righe");
+  const baseRow = table.querySelector(".riga-automatica.base");
+  const row = baseRow.cloneNode(true);
+
+  row.classList.remove("base");
+  row.style.display = "";
+
+  // riabilita campi
+  row.querySelectorAll("select, input").forEach(el => {
+    el.disabled = false;
+  });
+
+  // ✅ IMPOSTA LA STESSA QUOTA
+  row.querySelector('select[name="quota_id[]"]').value = quotaId;
+
+  // anno / mese
+  const anno = meseISO.substring(0, 4);
+  const mese = meseISO.substring(5, 7);
+  row.querySelector('select[name="anno[]"]').value = anno;
+  row.querySelector('select[name="mese[]"]').value = mese;
+
+  // ✅ IMPORTO AUTOMATICO
+  const imp = quoteImporti[quotaId] || "";
+  row.querySelector('input[name="importo[]"]').value = imp;
+
+  // bottone elimina
+  row.querySelector("td:last-child").innerHTML =
+    `<button type="button" onclick="rimuoviRiga(this)">🗑️</button>`;
+
+  // listener quota
+  const quotaSelect = row.querySelector('select[name="quota_id[]"]');
+  quotaSelect.addEventListener("change", function () {
+    aggiornaImporto(this.closest("tr"));
+  });
+
+  table.appendChild(row);
+}
+
+/* ✅ FIX: ripristino funzioni mancanti (i bottoni erano “morti”) */
+function aggiungiRiga() {
+  const table = document.getElementById("righe");
+  const baseRow = table.querySelector(".riga-automatica.base");
+
+  if (!baseRow) return; // ✅ FIX DI SICUREZZA
+
+  const row = baseRow.cloneNode(true);
+
+  row.classList.remove("base");
+  row.style.display = "";
+
+  // 🔧 RIABILITA TUTTI I CAMPI
+  row.querySelectorAll("select, input").forEach(el => {
+    el.disabled = false;
+    if (el.tagName === "SELECT") el.selectedIndex = 0;
+    if (el.tagName === "INPUT") el.value = "";
+  });
+
+  // bottone elimina
+  row.querySelector("td:last-child").innerHTML =
+    `<button type="button" onclick="rimuoviRiga(this)">🗑️</button>`;
+
+  // listener quota
+  const quotaSelect = row.querySelector('select[name="quota_id[]"]');
+  quotaSelect.addEventListener("change", function () {
+    aggiornaImporto(this.closest("tr"));
+  });
+
+  table.appendChild(row);
+}
+
+function aggiungiRigaManuale() {
+  const table = document.getElementById("righe");
+  const baseRow = table.querySelector(".riga-manuale");
+  const row = baseRow.cloneNode(true);
+
+  row.style.display = "";
+  row.querySelectorAll("input, select").forEach(el => el.value = "");
+
+  table.appendChild(row);
+}
+
+function rimuoviRiga(btn) {
+  btn.closest("tr").remove();
+}
+
+
+  function creaRigaAutomaticaIniziale() {
+  const table = document.getElementById("righe");
+  const baseRow = table.querySelector(".riga-automatica.base");
+  if (!baseRow) return;
+
+  const row = baseRow.cloneNode(true);
+  row.classList.remove("base");
+  row.style.display = "";
+
+  // abilita campi
+  row.querySelectorAll("select, input").forEach(el => {
+    el.disabled = false;
+  });
+
+  // bottone elimina
+  row.querySelector("td:last-child").innerHTML =
+    `<button type="button" onclick="rimuoviRiga(this)">🗑️</button>`;
+
+  // listener quota (QUI il popup è legittimo)
+  const quotaSelect = row.querySelector('select[name="quota_id[]"]');
+  quotaSelect.addEventListener("change", function () {
+    aggiornaImporto(this.closest("tr"));
+  });
+
+  table.appendChild(row);
+}
+
+
+
+if (!window.IS_EDIT) {
+  document.getElementById("sezionale_select").addEventListener("change", function () {
+    const sezionaleId = this.value;
+    if (!sezionaleId) return;
+
+    fetch(`/ricevute/next-numero/${sezionaleId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.numero) {
+          document.getElementById("numero_progressivo").value = data.numero;
+        }
+      });
+  });
+}
+
+function selezionaSocio(socioId) {
+  const anno = "{{ anno }}";
+  const mese = "{{ mese if mese is not none else '' }}";
+
+  if (!socioId) {
+    window.location = "{{ url_for('ricevute_bp.nuova_ricevuta') }}";
+    return;
+  }
+
+  let url = "{{ url_for('ricevute_bp.nuova_ricevuta') }}" + "?socio_id=" + socioId;
+
+  if (anno) url += "&anno=" + anno;
+  if (mese !== "") url += "&mese=" + mese;
+
+  window.location = url;
+}
+</script>
+
+<script>
+function _ensureOption(selectEl, value, label) {
+  if (!selectEl) return;
+  const exists = Array.from(selectEl.options).some(o => String(o.value) === String(value));
+  if (!exists) {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = label || ("Quota " + value);
+    selectEl.appendChild(opt);
+  }
+}
+
+function _addRigaQuotaFromData(r) {
+  const table = document.getElementById("righe");
+  const baseRow = table.querySelector(".riga-automatica.base");
+  if (!baseRow) return;
+
+  const row = baseRow.cloneNode(true);
+  row.classList.remove("base");
+  row.style.display = "";
+
+  // abilita campi e pulisci
+  row.querySelectorAll("select, input").forEach(el => {
+    el.disabled = false;
+  });
+
+  // bottone elimina
+  row.querySelector("td:last-child").innerHTML =
+    `<button type="button" onclick="rimuoviRiga(this)">🗑️</button>`;
+
+  const quotaSel = row.querySelector('select[name="quota_id[]"]');
+  const annoSel  = row.querySelector('select[name="anno[]"]');
+  const meseSel  = row.querySelector('select[name="mese[]"]');
+  const impInp   = row.querySelector('input[name="importo[]"]');
+
+  // mese salvato in DB: "YYYY-MM" (anche "YYYY-00" se vecchio)
+  const meseStr = (r.mese || "").trim();
+  const y = meseStr.length >= 4 ? meseStr.substring(0, 4) : "";
+  let m = meseStr.length >= 7 ? meseStr.substring(5, 7) : "";
+
+  if (m === "00") m = "00"; // annuale vecchio
+  if (m === "0")  m = "00";
+
+  // quota_id potrebbe non essere tra le option (perché ora filtriamo DA_PAGARE)
+  _ensureOption(quotaSel, r.quota_id, r.descrizione || ("Quota " + r.quota_id));
+  quotaSel.value = String(r.quota_id || "");
+
+  if (annoSel && y) annoSel.value = String(parseInt(y));
+  if (meseSel && m) meseSel.value = m;
+
+  if (impInp) impInp.value = (r.importo != null ? String(r.importo) : "");
+
+  // rimetti listener (popup insoluti)
+  quotaSel.addEventListener("change", function () {
+    aggiornaImporto(this.closest("tr"));
+  });
+
+  table.appendChild(row);
+}
+
+function _addRigaManualeFromData(r) {
+  const table = document.getElementById("righe");
+  const baseRow = table.querySelector(".riga-manuale");
+  if (!baseRow) return;
+
+  const row = baseRow.cloneNode(true);
+  row.style.display = "";
+
+  const descInp = row.querySelector('input[name="descrizione_manual[]"]');
+  const annoSel = row.querySelector('select[name="anno_manual[]"]');
+  const meseSel = row.querySelector('select[name="mese_manual[]"]');
+  const impInp  = row.querySelector('input[name="importo_manual[]"]');
+
+  if (descInp) descInp.value = (r.descrizione || "");
+  if (impInp) impInp.value = (r.importo != null ? String(r.importo) : "");
+
+  const meseStr = (r.mese || "").trim();
+  const y = meseStr.length >= 4 ? meseStr.substring(0, 4) : "";
+  const m = meseStr.length >= 7 ? meseStr.substring(5, 7) : "";
+
+  if (annoSel && y) annoSel.value = String(parseInt(y));
+  if (meseSel && m && m !== "00") meseSel.value = m; // per manuale non gestiamo annuale
+
+  // bottone elimina (ce l'ha già nel template baseRow)
+  table.appendChild(row);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  // ✅ MODIFICA: precompila righe salvate
+  if (window.IS_EDIT && Array.isArray(window.RIGHE_ESISTENTI) && window.RIGHE_ESISTENTI.length > 0) {
+    window.RIGHE_ESISTENTI.forEach(r => {
+      if ((r.tipo || "").toUpperCase() === "MANUALE") {
+        _addRigaManualeFromData(r);
+      } else {
+        _addRigaQuotaFromData(r);
+      }
+    });
+    return;
+  }
+
+  // ✅ NUOVA: comportamento precedente
+  {% if socio and not quota %}
+    creaRigaAutomaticaIniziale();
+  {% endif %}
+});
+</script>
+
+<div id="wizardInsoluti"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4);">
+  <div style="
+    background:#fff;
+    width:420px;
+    max-height:70vh;
+    margin:5% auto;
+    padding:20px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  ">
+    <h4>Mesi insoluti</h4>
+
+    <div id="listaMesi"
+        style="overflow-y:auto; flex:1; border:1px solid #ddd; padding:10px;">
+    </div>
+
+    <div style="margin-top:10px; font-weight:bold;">
+      Totale selezionato: € <span id="totalePopup">0.00</span>
+    </div>
+
+
+    <br>
+    <button type="button" onclick="confermaMesi()">Conferma</button>
+    <button type="button" onclick="chiudiWizard()">Annulla</button>
+  </div>
+</div>
+
+{% endblock %}

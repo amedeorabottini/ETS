@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Modulo adesione</title>
+  <style>
+    body { font-family: serif; margin: 40px; }
+    h1 { text-align: center; }
+    @media print {
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<button onclick="window.print()">Stampa</button>
+
+<h1>Richiesta di adesione / rinnovo</h1>
+
+<p>
+Il/la sottoscritto/a <strong>{{ socio.nome }} {{ socio.cognome }}</strong><br>
+chiede:
+</p>
+
+<ul>
+  <li>di essere iscritto in qualità di socio all’associazione <strong>{{ associazione.denominazione }}</strong></li>
+  <li>di rinnovare il tesseramento per l’anno {{ anno }}</li>
+</ul>
+
+</body>
+</html>

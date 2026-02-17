@@ -1,0 +1,645 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-4">Dettaglio socio</h2>
+
+<form method="get" class="mb-4" style="max-width: 420px;">
+  <label class="form-label">Passa a un altro socio</label>
+  <select class="form-select"
+          onchange="if (this.value) window.location.href = this.value;">
+    {% for s in soci_elenco %}
+      <option value="{{ url_for('dettaglio_socio', socio_id=s.id) }}"
+        {% if s.id == socio.id %}selected{% endif %}>
+        {{ s.cognome }} {{ s.nome }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+
+<div class="card mb-4">
+  <div class="card-body">
+
+
+<hr class="my-4">
+
+
+
+<!-- ========================= -->
+<!-- FORM MODIFICA SOCIO -->
+<!-- ========================= -->
+<form method="post">
+
+  <h5 class="mb-3">Dati anagrafici</h5>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Nome</label>
+      <input type="text" name="nome" value="{{ socio.nome }}" class="form-control" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Cognome</label>
+      <input type="text" name="cognome" value="{{ socio.cognome }}" class="form-control" required>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Codice fiscale</label>
+      <input type="text" name="codice_fiscale" value="{{ socio.codice_fiscale or '' }}" class="form-control">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Data di nascita</label>
+      <input type="date" name="data_nascita" value="{{ socio.data_nascita }}" class="form-control">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Luogo di nascita</label>
+      <input type="text" name="luogo_nascita" value="{{ socio.luogo_nascita or '' }}" class="form-control">
+    </div>
+  </div>
+
+  <hr class="my-4">
+
+<h6 class="text-muted mt-4 mb-2">Residenza</h6>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Indirizzo</label>
+      <input type="text" name="indirizzo" value="{{ socio.indirizzo or '' }}" class="form-control">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">CAP</label>
+      <input type="text" name="cap" value="{{ socio.cap or '' }}" class="form-control">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Comune</label>
+      <input type="text" name="comune" value="{{ socio.comune or '' }}" class="form-control">
+    </div>
+
+    <div class="col-md-1">
+      <label class="form-label">Prov.</label>
+      <input type="text" name="provincia" value="{{ socio.provincia or '' }}" class="form-control">
+    </div>
+  </div>
+
+
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Email</label>
+      <input type="email" name="email" value="{{ socio.email or '' }}" class="form-control">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Telefono</label>
+      <input type="text" name="telefono" value="{{ socio.telefono or '' }}" class="form-control">
+    </div>
+  </div>
+
+  <hr class="my-4">
+
+  <h5 class="mb-3">Vita associativa</h5>
+
+  <div class="row g-3">
+  <div class="col-md-3">
+    <label class="form-label">Data ingresso</label>
+    <input type="date"
+       name="data_ingresso"
+       class="form-control"
+       value="{{ socio.data_ingresso }}"
+       required>
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label">Data uscita</label>
+    <input type="date"
+       name="data_uscita"
+       class="form-control"
+       value="{{ socio.data_uscita }}">
+    <div class="form-text">Socio attivo se vuoto</div>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Note</label>
+    <textarea name="note" rows="2" class="form-control">{{ socio.note or '' }}</textarea>
+  </div>
+</div>
+  <div class="d-flex gap-2 mt-4">
+    <button type="submit" class="btn btn-success">
+      💾 Salva modifiche
+    </button>
+
+    <a href="{{ url_for('libro_soci') }}" class="btn btn-outline-secondary">
+      ⬅ Torna al libro soci
+    </a>
+  </div>
+
+</form>
+  </div>
+</div>
+
+<hr>
+
+<hr class="my-4">
+
+<h5 class="mb-3">Abilitazioni socio</h5>
+
+
+<div class="row g-4">
+
+  <hr class="my-4">
+
+
+<form method="get"
+      action="{{ url_for('dettaglio_socio', socio_id=socio.id) }}"
+      class="mb-3"
+      style="max-width:200px;">
+
+  <label class="form-label">Anno</label>
+
+  <select id="selectAnno" class="form-select">
+
+    {% for a in anni_abilitazioni %}
+      <option value="{{ a }}"
+        {% if a == anno_selezionato %}selected{% endif %}>
+        {{ a }}
+      </option>
+    {% endfor %}
+
+  </select>
+</form>
+
+  <h5 class="mb-3">Abilitazioni per anno</h5>
+
+<div class="form-text mb-3">
+  Le abilitazioni valgono per l’anno selezionato e vengono storicizzate.
+</div>
+
+<form method="post" action="{{ url_for('salva_abilitazioni_socio', socio_id=socio.id) }}">
+<input type="hidden" name="anno" id="annoHidden" value="{{ anno_selezionato }}">
+
+ <div class="row g-4 align-items-start">
+
+  <!-- TESSERAMENTO -->
+  <div class="col-md-4">
+    <label class="form-label">Tesseramento</label>
+
+    <div class="form-check">
+      <input class="form-check-input"
+             type="checkbox"
+             name="gestione_tesseramento"
+             id="gestione_tesseramento_anno"
+             {% if abilitazioni_anno and abilitazioni_anno.gestione_tesseramento %}
+             checked
+             {% endif %}>
+      <label class="form-check-label">
+        Gestione tesseramento
+      </label>
+    </div>
+
+    {% if enti_affiliazione %}
+      <div class="ms-3 mt-2">
+        {% for e in enti_affiliazione %}
+          <div class="form-check">
+            <input type="checkbox"
+                   name="enti_tesseramento"
+                   value="{{ e.codice }}"
+                   {% if abilitazioni_anno
+                         and abilitazioni_anno.enti_tesseramento
+                         and e.codice in abilitazioni_anno.enti_tesseramento.split(',') %}
+                   checked
+                   {% endif %}>
+            <label class="form-check-label">
+              {{ e.nome }} ({{ e.codice }})
+            </label>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- CERTIFICATI -->
+  <div class="col-md-4">
+    <label class="form-label">Certificati medici</label>
+
+    <div class="form-check">
+      <input class="form-check-input"
+             type="checkbox"
+             name="certificato_agonistico"
+             {% if abilitazioni_anno and abilitazioni_anno.certificato_agonistico %}
+             checked
+             {% endif %}>
+      <label class="form-check-label">Agonistico</label>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input"
+             type="checkbox"
+             name="certificato_non_agonistico"
+             {% if abilitazioni_anno and abilitazioni_anno.certificato_non_agonistico %}
+             checked
+             {% endif %}>
+      <label class="form-check-label">Non agonistico</label>
+    </div>
+  </div>
+
+  <!-- RUOLO -->
+  <div class="col-md-4">
+    <label class="form-label">Ruolo</label>
+
+    <div class="form-check">
+      <input class="form-check-input"
+             type="checkbox"
+             name="is_volontario"
+             {% if abilitazioni_anno and abilitazioni_anno.is_volontario %}
+             checked
+             {% endif %}>
+      <label class="form-check-label">Volontario</label>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input"
+             type="checkbox"
+             name="abilita_rimborso_spese"
+             {% if abilitazioni_anno and abilitazioni_anno.abilita_rimborso_spese %}
+             checked
+             {% endif %}>
+      <label class="form-check-label">Rimborsi spese</label>
+    </div>
+  </div>
+
+</div>
+
+<div class="d-flex flex-column gap-3 mt-4">
+
+  <!-- BOTTONI DI SALVATAGGIO -->
+  <div class="d-flex gap-3 align-items-center">
+
+    <!-- Salva SOLO anno -->
+    <button type="submit"
+            class="btn btn-primary">
+       Salva abilitazioni anno
+    </button>
+
+    <!-- Salva + propaga -->
+    <button type="submit"
+            name="propaga_anni_successivi"
+            value="1"
+            class="btn btn-outline-success"
+            onclick="return confirm('Vuoi salvare le impostazioni in tutti gli anni successivi?')">
+       Salva in anni successivi
+    </button>
+
+  </div>
+
+  <!-- LINK DI NAVIGAZIONE -->
+  <div class="d-flex gap-3 align-items-center">
+
+    <a href="{{ url_for('tesseramenti_bp.storico_tesseramenti_socio', socio_id=socio.id) }}"
+       class="btn btn-outline-primary">
+      Storico tesseramenti
+    </a>
+
+    <a href="{{ url_for('certificati_bp.storico_certificati_medici_socio', socio_id=socio.id) }}"
+       class="btn btn-outline-danger">
+      Certificati medici
+    </a>
+
+  </div>
+
+</div>
+
+</div>
+
+</form>
+
+<!-- ========================= -->
+<!-- QUOTE ASSEGNATE -->
+<!-- ========================= -->
+
+<h5>Quote assegnate</h5>
+
+{% if quote_socio %}
+<table class="table-gestionale">
+ 
+  <thead>
+  <tr>
+    <th>Quota</th>
+    <th>Importo</th>
+    <th>Periodicità</th>
+    <th>Data inizio</th>
+    <th>Data fine</th>
+    <th class="text-center">Azioni</th>   <!-- 👈 AGGIUNTA -->
+  </tr>
+</thead>
+  <tbody>
+    {% for qs in quote_socio %}
+    <tr>
+  <td>{{ qs.nome }} <small class="text-muted">(id={{ qs.id }})</small></td>
+  <td>{{ "%.2f"|format(qs.importo) }} €</td>
+  <td>{{ qs.periodicita }}</td>
+  <td>
+    {{ qs.data_inizio[8:10] }}/{{ qs.data_inizio[5:7] }}/{{ qs.data_inizio[0:4] }}
+  </td>
+
+  <td>
+    {% if qs.data_fine %}
+      {{ qs.data_fine[8:10] }}/{{ qs.data_fine[5:7] }}/{{ qs.data_fine[0:4] }}
+    {% else %}
+      <span class="text-muted">—</span>
+    {% endif %}
+  <td class="align-middle">
+  {% if qs.attiva|int == 1 %}
+    <div class="d-flex justify-content-center gap-2">
+      <button class="btn btn-sm btn-outline-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#modificaQuotaModal{{ qs.id }}">
+        ✏️ Modifica
+      </button>
+
+      <button class="btn btn-sm btn-outline-danger"
+              data-bs-toggle="modal"
+              data-bs-target="#eliminaQuotaModal{{ qs.id }}">
+        🗑️ Elimina
+      </button>
+    </div>
+  {% else %}
+    <div class="text-center text-muted small">
+      Storicizzata
+    </div>
+  {% endif %}
+</td>
+
+</tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+
+{% else %}
+<p class="text-muted"><i>Nessuna quota assegnata.</i></p>
+{% endif %}
+
+<!-- ========================= -->
+<!-- MODAL ELIMINA QUOTA -->
+<!-- ========================= -->
+{% for qs in quote_socio %}
+<div class="modal fade" id="eliminaQuotaModal{{ qs.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="post"
+          action="{{ url_for('soci_bp.elimina_quota_socio',
+                   socio_id=socio.id,
+                   soci_quota_id=qs.id) }}">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Elimina quota assegnata</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <p>
+            La quota <strong>{{ qs.nome }}</strong> verrà storicizzata.
+          </p>
+
+          <label class="form-label">Data fine validità</label>
+          <input type="date"
+                 name="data_fine"
+                 class="form-control"
+                 value="{{ qs.data_inizio }}"
+                 required>
+
+          <div class="form-text mt-2">
+            Le scadenze future non pagate verranno rimosse.
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal">
+            Annulla
+          </button>
+          <button type="submit"
+                  class="btn btn-danger">
+            Conferma eliminazione
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+<!-- ========================= -->
+<!-- MODAL MODIFICA QUOTA -->
+<!-- ========================= -->
+
+{% for qs in quote_socio %}
+<div class="modal fade" id="modificaQuotaModal{{ qs.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="post"
+          action="{{ url_for('modifica_quota_socio',
+                             socio_id=socio.id,
+                             soci_quota_id=qs.id) }}">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Modifica quota assegnata</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Data inizio</label>
+            <input type="date"
+                   name="data_inizio"
+                   class="form-control"
+                   value="{{ qs.data_inizio }}"
+                   required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Data fine</label>
+            <input type="date"
+                   name="data_fine"
+                   class="form-control"
+                   value="{{ qs.data_fine or '' }}">
+            <div class="form-text">
+              Facoltativa. Se vuota, la quota resta attiva.
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal">
+            Annulla
+          </button>
+          <button type="submit"
+                  class="btn btn-primary">
+            Salva modifiche
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+
+<h5>Assegna nuova quota</h5>
+
+<form method="post"
+      action="{{ url_for('soci_bp.assegna_quota_socio', socio_id=socio.id) }}"
+      class="mt-3"
+      style="max-width:420px;">
+
+  <div class="mb-3">
+    <label class="form-label">Quota</label>
+    <select name="quota_id" class="form-select" required>
+      {% for q in quote %}
+        <option value="{{ q.id }}">
+          {{ q.nome }} — {{ "%.2f"|format(q.importo) }} € ({{ q.periodicita }})
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Data inizio</label>
+    <input type="date"
+           name="data_inizio"
+           class="form-control"
+           required>
+  </div>
+
+  
+
+  <div class="col-12">
+    <div class="form-text">
+      Intervallo mesi valido nell’anno (es. 03–08). Il generatore quote userà questo range.
+    </div>
+  </div>
+
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-success">
+      ➕ Assegna quota
+    </button>
+
+    <a href="{{ url_for('dettaglio_socio', socio_id=socio.id) }}"
+       class="btn btn-outline-secondary">
+      Annulla
+    </a>
+  </div>
+
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const volontario = document.getElementById("is_volontario");
+  const rimborso = document.getElementById("abilita_rimborso_spese");
+
+  function aggiornaRimborso() {
+    if (!volontario.checked) {
+      rimborso.checked = false;
+      rimborso.disabled = true;
+    } else {
+      rimborso.disabled = false;
+    }
+  }
+
+  volontario.addEventListener("change", aggiornaRimborso);
+  aggiornaRimborso();
+});
+</script>
+
+  <script>
+function toggleBox(checkId, boxId) {
+  const check = document.getElementById(checkId);
+  const box = document.getElementById(boxId);
+  if (!check || !box) return;
+  box.style.display = check.checked ? "block" : "none";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  toggleBox("gestione_tesseramento", "enti-affiliazione-box");
+  toggleBox("gestione_certificati_medici", "certificati-box");
+
+  document.getElementById("gestione_tesseramento")
+    ?.addEventListener("change", () =>
+      toggleBox("gestione_tesseramento", "enti-affiliazione-box")
+    );
+
+  document.getElementById("gestione_certificati_medici")
+    ?.addEventListener("change", () =>
+      toggleBox("gestione_certificati_medici", "certificati-box")
+    );
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const chkTess = document.getElementById("gestione_tesseramento_anno");
+  const enti = document.querySelectorAll("input[name='enti_tesseramento']");
+
+  const chkVol = document.querySelector("input[name='is_volontario']");
+  const chkRimb = document.querySelector("input[name='abilita_rimborso_spese']");
+
+  function aggiornaTesseramenti() {
+    enti.forEach(e => {
+      e.disabled = !chkTess.checked;
+      if (!chkTess.checked) e.checked = false;
+    });
+  }
+
+  function aggiornaRimborsi() {
+    if (!chkVol.checked) {
+      chkRimb.checked = false;
+      chkRimb.disabled = true;
+    } else {
+      chkRimb.disabled = false;
+    }
+  }
+
+  chkTess.addEventListener("change", aggiornaTesseramenti);
+  chkVol.addEventListener("change", aggiornaRimborsi);
+
+  aggiornaTesseramenti();
+  aggiornaRimborsi();
+});
+</script>
+
+<script>
+document.getElementById("selectAnno").addEventListener("change", function () {
+  const anno = this.value;
+
+  fetch(`{{ url_for('get_abilitazioni_socio_json', socio_id=socio.id) }}?anno=` + anno)
+    .then(r => r.json())
+    .then(data => {
+
+      document.getElementById("annoHidden").value = anno;
+
+      document.querySelector("input[name='gestione_tesseramento']").checked = !!data.gestione_tesseramento;
+      document.querySelector("input[name='certificato_agonistico']").checked = !!data.certificato_agonistico;
+      document.querySelector("input[name='certificato_non_agonistico']").checked = !!data.certificato_non_agonistico;
+      document.querySelector("input[name='is_volontario']").checked = !!data.is_volontario;
+      document.querySelector("input[name='abilita_rimborso_spese']").checked = !!data.abilita_rimborso_spese;
+
+      document.querySelectorAll("input[name='enti_tesseramento']").forEach(cb => {
+        cb.checked = data.enti_tesseramento.includes(cb.value);
+      });
+    });
+});
+</script>
+
+{% endblock %}

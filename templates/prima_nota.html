@@ -1,0 +1,610 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Prima Nota</h2>
+
+  <!-- LAYOUT DUE COLONNE -->
+
+
+<div style="margin-bottom:20px; display:flex; gap:15px; align-items:center;">
+  <strong>Esercizio:</strong>
+
+  <select onchange="cambiaEsercizio(this.value)" tabindex="-1">
+    {% for e in esercizi %}
+      <option value="{{ e.id }}"
+        {% if e.id == esercizio_id %}selected{% endif %}>
+        {{ e.anno }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <button type="button"
+        class="btn btn-outline-primary"
+        onclick="nuovoEsercizio()">
+  ➕ Nuovo esercizio
+</button>
+</div>
+
+
+<div style="display:flex; gap:30px; align-items:flex-start;">
+
+  <!-- COLONNA SINISTRA -->
+  <div style="flex:1; border:1px solid #ccc; padding:15px; background:#f9f9f9;">
+    <h4>Inserimento movimento</h4>
+
+    <form method="post">
+      <input type="hidden" name="azione" value="inserimento">
+
+      <!-- ETICHETTE -->
+<div style="display:flex; gap:12px; font-size:13px; color:#333;">
+  <div style="width:130px;">Data</div>
+  <div style="flex:1;">Descrizione</div>
+</div>
+
+<!-- CAMPI -->
+<div style="display:flex; gap:12px; align-items:center; margin-top:4px;">
+
+  <!-- DATA -->
+  <div style="white-space:nowrap; width:130px;">
+    <input type="number"
+           id="giorno"
+           name="giorno"
+           min="1" max="31"
+           required
+           tabindex="1"
+           style="width:60px;"> /
+    <input type="number"
+          id="mese" 
+          name="mese"
+           min="1" max="12"
+           required
+           tabindex="2"
+           style="width:60px;">
+  </div>
+
+  <!-- DESCRIZIONE -->
+  <input type="text"
+         name="descrizione"
+         id="descrizione"
+         required
+         tabindex="3"
+         style="flex:1;">
+</div>
+
+<br>
+
+<br>
+
+<b>Wizard / Operazione</b><br>
+
+<div style="display:flex; gap:12px; align-items:center;">
+
+  <button type="button"
+        id="wizardBtn"
+        tabindex="4"
+        class="btn btn-outline-primary">
+  ✨ Wizard
+</button>
+
+  <input type="text"
+         name="operazione"
+         id="operazione"
+         tabindex="5"
+         style="flex:1;">
+</div>
+
+<br>
+
+     Importo<br>
+
+<div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+
+  <input type="number"
+         step="0.01"
+         name="importo"
+         required
+         style="width:140px;">
+
+  <select name="tipo_movimento"
+          id="tipo_movimento"
+          required>
+    <option value="">— tipo —</option>
+    <option value="E">Entrata</option>
+    <option value="U">Uscita</option>
+  </select>
+
+  <label style="white-space:nowrap;">
+    <input type="checkbox" name="solo_finanziario" value="1">
+    Solo finanziario
+  </label>
+
+</div>
+
+<br>
+
+      Conto finanziario<br>
+      <select name="conto_id" style="width:100%;">
+
+  {% if conto_default %}
+    <option value="{{ conto_default.id }}" selected>
+      DEFAULT ({{ conto_default.codice }} - {{ conto_default.nome }})
+    </option>
+  {% else %}
+    <option value="" selected>CASSA</option>
+  {% endif %}
+
+  <option value="">CASSA</option>
+
+  {% for c in conti_correnti %}
+    <option value="{{ c.id }}">{{ c.codice }} - {{ c.nome }}</option>
+  {% endfor %}
+
+</select>
+      <br><br>
+
+      Classificazione<br>
+      <select name="classificazione" id="classificazione" style="width:100%;">
+        <option value="">— Nessuna classificazione —</option>
+        {% for c in conti %}
+          <option value="{{ c.id }}">{{ c.codice }} - {{ c.descrizione }}</option>
+        {% endfor %}
+      </select>
+      <br><br>
+
+      <button type="submit" class="btn btn-success">
+  Salva
+</button>
+    </form>
+  </div>
+
+  <!-- COLONNA DESTRA -->
+  <div style="flex:1; border:1px solid #ccc; padding:15px;">
+    <h4>Ricerca</h4>
+
+    <form id="form-ricerca" method="post">
+      Data<br>
+      Da <input type="date" name="data_da">
+      A <input type="date" name="data_a"><br><br>
+
+      Importo<br>
+      Min <input type="number" step="0.01" name="importo_min">
+      Max <input type="number" step="0.01" name="importo_max"><br><br>
+
+      Descrizione<br>
+      <input type="text" name="testo" style="width:100%;"><br><br>
+
+      Conto<br>
+      <select name="conto" style="width:100%;">
+        <option value="">— tutti —</option>
+        <option value="CASSA">CASSA</option>
+        {% for c in conti_correnti %}
+          <option value="{{ c.id }}">{{ c.codice }} - {{ c.nome }}</option>
+        {% endfor %}
+      </select><br><br>
+
+      Classificazione<br>
+      <select name="classificazione" style="width:100%;">
+        <option value="">— tutte —</option>
+        {% for c in conti %}
+          <option value="{{ c.id }}">{{ c.codice }} - {{ c.descrizione }}</option>
+        {% endfor %}
+      </select><br><br>
+
+      <button type="submit" class="btn btn-primary">
+  Cerca
+</button>
+
+<button type="button"
+        class="btn btn-secondary"
+        onclick="window.location.href='{{ url_for('prima_nota') }}'">
+  Reset
+</button>
+    </form>
+    <hr>
+
+
+<a href="{{ url_for('bilancio') }}"
+   class="btn btn-primary"
+   onclick="
+     window.open(
+       this.href,
+       'bilancio',
+       'width=1200,height=800,scrollbars=yes,resizable=yes'
+     );
+     return false;
+   ">
+   Apri Bilancio
+</a>
+  </div>
+</div>
+
+<hr>
+
+<div id="risultati-prima-nota">
+  {% include "partials/prima_nota_risultati.html" %}
+</div>
+
+<!-- ======================= SCRIPT ======================= -->
+<script>
+console.log("JS Prima Nota caricato");
+
+function cambiaEsercizio(id) {
+  window.location = "{{ url_for('prima_nota') }}?esercizio_id=" + id;
+}
+
+function nuovoEsercizio() {
+  const anno = prompt("Inserisci il nuovo anno di esercizio:");
+  if (!anno) return;
+
+  window.location = "/gestione-esercizio?nuovo_anno=" + anno;
+}
+
+/* ================= HELPERS ================= */
+function formatDateIT(iso){
+  if(!iso) return "";
+  const [y,m,d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function formatDateISO(it){
+  if(!it) return "";
+  const [d,m,y] = it.split("/");
+  return `${y}-${m.padStart(2,"0")}-${d.padStart(2,"0")}`;
+}
+
+function aggiornaTotali(){
+  let e=0,u=0;
+  document.querySelectorAll("#risultati-prima-nota td.entrata").forEach(td=>{
+    const v=parseFloat(td.innerText.replace(",","."));
+    if(!isNaN(v)) e+=v;
+  });
+  document.querySelectorAll("#risultati-prima-nota td.uscita").forEach(td=>{
+    const v=parseFloat(td.innerText.replace(",","."));
+    if(!isNaN(v)) u+=v;
+  });
+  const r=document.getElementById("row-totali");
+  if(r){
+    r.children[2].innerText=e.toFixed(2);
+    r.children[3].innerText=u.toFixed(2);
+  }
+}
+
+/* ================= COLORI ================= */
+/*
+function coloraRighePerConto(){
+  document.querySelectorAll("#risultati-prima-nota tr[data-conto-id]").forEach(tr=>{
+    const conto = tr.dataset.contoId || "CASSA";
+    tr.style.backgroundColor = "";
+
+    if (conto === "CASSA") {
+      tr.style.background = "#f0f0f0";
+    } else if (tr.dataset.contoColore) {
+      tr.style.background = tr.dataset.contoColore;
+    }
+  });
+}
+*/
+
+/* ================= WIZARD ================= */
+function initWizard(){
+  const btn=document.getElementById("wizardBtn");
+  if(!btn) return;
+  console.log("initWizard: OK, bottone trovato");
+  btn.addEventListener("click", () => console.log("WIZARD CLICK")); 
+
+  btn.onclick=()=>{
+    const d=document.getElementById("descrizione").value.trim();
+    if(!d) return alert("Inserisci descrizione");
+
+    const fd=new FormData();
+    fd.append("descrizione",d);
+
+    fetch("/wizard-suggerisci",{method:"POST",body:fd})
+      .then(r=>r.json())
+      .then(x=>{
+        if(!x?.found) return alert("Nessuna regola");
+
+        const opEl = document.getElementById("operazione");
+        const tipoEl = document.getElementById("tipo_movimento");
+        const clsEl = document.getElementById("classificazione");
+
+        if(x.operazione && opEl) opEl.value = x.operazione;
+        if(x.tipo_movimento && tipoEl) tipoEl.value = x.tipo_movimento;
+        if(x.classificazione_md_id && clsEl) clsEl.value = x.classificazione_md_id;
+      });
+  };
+}
+
+/* ================= EDIT ================= */
+
+function rowView(id){ return document.getElementById("row-view-"+id); }
+function rowEdit(id){ return document.getElementById("row-edit-"+id); }
+
+function editRow(id){
+  const rv = rowView(id);
+  const re = rowEdit(id);
+  if(!rv || !re) return;
+
+  const dataIT = rv.querySelector(".data")?.innerText.trim();
+  const inputDate = re.querySelector("input[type='date']");
+  if(dataIT && inputDate){
+    inputDate.value = formatDateISO(dataIT);
+  }
+
+  try {
+    const inEl = document.getElementById("in-" + id);
+    const outEl = document.getElementById("out-" + id);
+
+    if (inEl && outEl && !inEl.dataset.bound) {
+      inEl.dataset.bound = "1";
+      outEl.dataset.bound = "1";
+
+      inEl.addEventListener("input", () => {
+        if (inEl.value !== "") outEl.value = "";
+      });
+
+      outEl.addEventListener("input", () => {
+        if (outEl.value !== "") inEl.value = "";
+      });
+    }
+  } catch (e) {
+    console.error("Errore binding Entrata/Uscita per riga", id, e);
+  }
+
+  rv.style.display="none";
+  re.style.display="";
+}
+
+function cancelEdit(id){
+  rowEdit(id).style.display="none";
+  rowView(id).style.display="";
+}
+
+function reloadRisultati(){
+  const risultati = document.getElementById("risultati-prima-nota");
+  const f = document.getElementById("form-ricerca");
+
+  if(!risultati || !f){
+    // fallback: reload pagina mantenendo esercizio
+    window.location.href = "{{ url_for('prima_nota') }}?esercizio_id={{ esercizio_id }}";
+    return;
+  }
+
+  fetch("/ajax-ricerca-prima-nota", { method: "POST", body: new FormData(f) })
+    .then(r => r.text())
+    .then(html => {
+      risultati.innerHTML = html;
+      aggiornaTotali();
+    });
+}
+
+function applyRowView(id){
+  const rv = rowView(id);
+  if(!rv) return;
+
+  const dataIso = document.getElementById("data-"+id)?.value || "";
+  const descr = document.getElementById("descr-"+id)?.value || "";
+
+  const ie = document.getElementById("in-"+id)?.value || "";
+  const iu = document.getElementById("out-"+id)?.value || "";
+  let tipo = ie ? "E" : "U";
+  let importo = ie ? ie : iu;
+
+  // se entrambi vuoti, non aggiornare la view (evita stati strani)
+  if(!ie && !iu) return;
+
+  const clsSel = document.getElementById("cls-"+id);
+  const clsVal = clsSel ? clsSel.value : "";
+  const clsText = (clsSel && clsSel.selectedOptions && clsSel.selectedOptions[0])
+    ? clsSel.selectedOptions[0].textContent.trim()
+    : "";
+
+  const contoSel = document.getElementById("conto-"+id);
+  const contoVal = contoSel ? contoSel.value : "";
+  const contoText = (contoSel && contoSel.selectedOptions && contoSel.selectedOptions[0])
+    ? contoSel.selectedOptions[0].textContent.trim()
+    : "CASSA";
+
+  // aggiorna celle view
+  rv.querySelector(".data").innerText = formatDateIT(dataIso);
+  rv.querySelector(".descrizione").innerText = descr;
+
+  const tdE = rv.querySelector("td.entrata");
+  const tdU = rv.querySelector("td.uscita");
+
+  // svuota entrambe e poi imposta quella giusta
+  if(tdE) tdE.innerText = "";
+  if(tdU) tdU.innerText = "";
+
+  const valNum = parseFloat(String(importo).replace(",", "."));
+  const valTxt = isNaN(valNum) ? "" : valNum.toFixed(2);
+
+  if(tipo === "E" && tdE) tdE.innerText = valTxt;
+  if(tipo === "U" && tdU) tdU.innerText = valTxt;
+
+  // classificazione
+  const tdCls = rv.querySelector("td.classificazione");
+  if(tdCls){
+    tdCls.dataset.classificazioneId = clsVal || "";
+    tdCls.innerText = clsVal ? clsText : "💱 Movimento finanziario";
+  }
+
+  // conto (6a colonna nel tuo table: dopo classificazione)
+  const tds = rv.querySelectorAll("td");
+  if(tds && tds.length >= 6){
+    tds[5].innerText = contoVal ? contoText : "CASSA";
+  }
+
+  // colore riga (opzionale, ma utile)
+  if(contoSel && contoSel.selectedOptions && contoSel.selectedOptions[0]){
+    const color = contoSel.selectedOptions[0].dataset.contoColor || "";
+    rv.dataset.contoId = contoVal || "CASSA";
+    rv.dataset.contoColore = color;
+    if(!contoVal){
+      rv.style.background = "#f0f0f0";
+    } else if(color){
+      rv.style.background = color;
+    } else {
+      rv.style.background = "#ffffff";
+    }
+  }
+}
+
+/* ================= SAVE ================= */
+function saveRow(id){
+  const data=document.getElementById("data-"+id).value;
+  const ie=document.getElementById("in-"+id).value;
+  const iu=document.getElementById("out-"+id).value;
+
+  if(!data || (ie && iu) || (!ie && !iu))
+    return alert("Dati non validi");
+
+  const fd=new FormData();
+  fd.append("data",data);
+  fd.append("descrizione",document.getElementById("descr-"+id).value);
+  fd.append("tipo",ie?"E":"U");
+  fd.append("importo",ie||iu);
+  fd.append("classificazione",document.getElementById("cls-"+id).value);
+  fd.append("conto_id",document.getElementById("conto-"+id).value);
+
+  fetch(`/ajax-modifica-operazione/${id}`,{method:"POST",body:fd})
+    .then(r=>r.json())
+    .then(res=>{
+      if(!res.ok) return alert(res.error||"Errore");
+
+      applyRowView(id);
+      cancelEdit(id);
+      aggiornaTotali();
+    });
+}
+
+/* ================= DELETE ================= */
+function deleteRow(id){
+  if(!confirm("Eliminare?")) return;
+  fetch(`/ajax-elimina-operazione/${id}`,{method:"POST"})
+    .then(r=>r.json())
+    .then(res=>{
+      if(res.ok){
+        rowView(id)?.remove();
+        rowEdit(id)?.remove();
+        aggiornaTotali();
+      }
+    });
+}
+
+/* ================= SEARCH ================= */
+function initSearch(){
+  const f=document.getElementById("form-ricerca");
+  const risultati=document.getElementById("risultati-prima-nota");
+  if(!f || !risultati) return;
+
+  f.addEventListener("submit",e=>{
+    e.preventDefault();
+    fetch("/ajax-ricerca-prima-nota",{method:"POST",body:new FormData(f)})
+      .then(r=>r.text())
+      .then(html=>{
+        risultati.innerHTML=html;
+        // coloraRighePerConto();
+        aggiornaTotali();
+      });
+  });
+}
+
+
+
+/* ================= ENTER / ESC ================= */
+document.addEventListener("keydown",function(e){
+  const editRowEl = e.target.closest("tr[id^='row-edit-']");
+
+  if(e.key==="Enter" && editRowEl){
+    e.preventDefault();
+    const id = editRowEl.id.replace("row-edit-","");
+    saveRow(id);
+  }
+
+  if(e.key==="Escape"){
+    e.preventDefault();
+    if(editRowEl){
+      const id = editRowEl.id.replace("row-edit-","");
+      cancelEdit(id);
+    } else {
+      window.location.href = "{{ url_for('prima_nota') }}?esercizio_id={{ esercizio_id }}";
+    }
+  }
+});
+
+/* ================= DELEGATION ================= */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-action]");
+  if(!b) return;
+  const id=b.dataset.id;
+
+  if(b.dataset.action==="edit") editRow(id);
+  if(b.dataset.action==="save") saveRow(id);
+  if(b.dataset.action==="cancel") cancelEdit(id);
+  if(b.dataset.action==="delete") deleteRow(id);
+});
+
+/* ================= INIT ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  initWizard();
+  initSearch();
+  aggiornaTotali();
+
+  /* ====== SOLO FINANZIARIO ====== */
+  const chk = document.querySelector("input[name='solo_finanziario']");
+  const cls = document.getElementById("classificazione");
+  if (chk && cls) {
+    const aggiornaClassificazione = () => {
+      if (chk.checked) {
+        cls.value = "";
+        cls.disabled = true;
+      } else {
+        cls.disabled = false;
+      }
+    };
+    chk.addEventListener("change", aggiornaClassificazione);
+    aggiornaClassificazione();
+  }
+
+  /* ====== FOCUS AUTOMATICO SU GIORNO ====== */
+  const giorno = document.getElementById("giorno");
+  if (giorno) {
+    giorno.focus();
+    giorno.select();
+  }
+
+  /* ====== AUTO-AVANZAMENTO GIORNO / MESE ====== */
+  const mese = document.getElementById("mese");
+  const descrizione = document.getElementById("descrizione");
+
+  if (giorno && mese && descrizione) {
+
+    // NB: su input type="number" alcuni browser non tengono bene gli zeri,
+    // ma il salto di focus funziona comunque.
+    const autoGo = (fromEl, toEl) => {
+      fromEl.addEventListener("input", () => {
+        const v = String(fromEl.value || "");
+        if (v.length >= 2) {
+          toEl.focus();
+          toEl.select();
+        }
+      });
+
+      // fallback per browser che non triggerano bene "input"
+      fromEl.addEventListener("keyup", () => {
+        const v = String(fromEl.value || "");
+        if (v.length >= 2) {
+          toEl.focus();
+          toEl.select();
+        }
+      });
+    };
+
+    autoGo(giorno, mese);
+    autoGo(mese, descrizione);
+  }
+});
+</script>
+
+{% endblock %}
